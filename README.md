@@ -30,8 +30,8 @@ Assuming an existing RDF ontology definition serialized in [Turtle](https://en.w
     print session.instances
 
     # Stream RDF statements capturing all class instances, properties and relations created
-    for statement in session.rdf_statements(format="turtle"):
-        print statement
+    for (subject, predicate, object) in session.rdf_statements():
+        print(subject, predicate, object)
 
 See the examples/ folder for a full example.
 

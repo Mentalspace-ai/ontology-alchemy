@@ -10,7 +10,7 @@ This project aims to make it easy to work programmatically with RDF Ontologies. 
 
 Some of the main tasks made possible with this library include:
 
-* Loading an existing RDF Ontology (e.g from a Turtle/N3 serialized format) into Python code, allowing introspection of the ontology. This is done via [rdflib](http://rdflib.readthedocs.io/en/stable/).
+* Loading an existing, serialized RDF Ontology (e.g from a Turtle/N3 formatted file) into Python code, allowing introspection of the ontology. This is done via [rdflib](http://rdflib.readthedocs.io/en/stable/)
 * Creating Pythonic class instances using the types defined in the ontology, including properties and relations, as well as native data types
 * Validation on property value types based on ontology definitions
 * Easy interfacing to persistence layer by a Session abstraction which exposes all instances created in an easy-to-use way
@@ -52,4 +52,5 @@ To work on the package locally, create a [virtualenv](http://docs.python-guide.o
 
 ## Similar Projects
 
+* [rdflib](http://rdflib.readthedocs.io/en/stable/) - RDFlib is the de facto standard library for working with RDF and its various serialization formats in Python. It has extensive support for most of the used serialization formats and schema namespaces (such as OWL, RDFS and FOAF), as well as a number of triplestore-style graph iteration APIs and persistent store backend implementations. It does not however aim to cover the interaction between ontology definitions and programmatic instantiation of ontology-defined types. Most of its stores have also fallen out of date and so it does not offer out of the box a viable solution for large-scale persistence of knowledge graph data.
 * [Owlready](http://pythonhosted.org/Owlready/index.html) - Exposes a simple interface to load OWL ontologies and create instances as Python classes. Also includes a reasoner engine (HermiT). Main limitation is that it only works with OWL and only supports OWL XML serialization format.

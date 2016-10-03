@@ -4,7 +4,16 @@ ontology-alchemy makes using [RDF](https://en.wikipedia.org/wiki/Resource_Descri
 
 [![CircleCI](https://circleci.com/gh/globality-corp/ontology-alchemy/tree/develop.svg?style=svg)](https://circleci.com/gh/globality-corp/ontology-alchemy/tree/develop)
 
-# Overview
+## Overview
+
+This project aims to make it easy to work programmatically with RDF Ontologies. RDF Ontologies are prelevant in the world of [Semantic Web](https://en.wikipedia.org/wiki/Semantic_Web). Notable projects using these include [schema.org](http://schema.org), which includes a general ontology that can be used by websites to describe their contents, and [DBPedia](http://wiki.dbpedia.org) which maintains a curated, multi-lingual structured knowledge graph based on Wikipedia.
+
+Some of the main tasks made possible with this library include:
+
+* Loading an existing RDF Ontology (e.g from a Turtle/N3 serialized format) into Python code, allowing introspection of the ontology. This is done via [rdflib](http://rdflib.readthedocs.io/en/stable/).
+* Creating Pythonic class instances using the types defined in the ontology, including properties and relations, as well as native data types
+* Validation on property value types based on ontology definitions
+* Easy interfacing to persistence layer by a Session abstraction which exposes all instances created in an easy-to-use way
 
 ## Usage
 
@@ -35,12 +44,12 @@ Assuming an existing RDF ontology definition serialized in [Turtle](https://en.w
 
 See the examples/ folder for a full example.
 
-# Developing
+## Developing
 
 To work on the package locally, create a [virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/), and then install package using:
 
     pip install -e .
 
-# Similar Projects
+## Similar Projects
 
 * [Owlready](http://pythonhosted.org/Owlready/index.html) - Exposes a simple interface to load OWL ontologies and create instances as Python classes. Also includes a reasoner engine (HermiT). Main limitation is that it only works with OWL and only supports OWL XML serialization format.

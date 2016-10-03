@@ -22,8 +22,14 @@ Assuming an existing RDF ontology definition serialized in [Turtle](https://en.w
     language = ontology.Language(label="English")
     country.officialLanguage = language
 
-    # Interfacing with a persistent backend is easy by using the `Session` object
+    # Interfacing with a persistent backend is easy by using the `Session` object:
+
+    # Get all programmatic class instances created since beginning of session
     print session.instances
+
+    # Stream RDF statements capturing all class instances, properties and relations created
+    for statement in session.rdf_statements(format="turtle"):
+        print statement
 
 See the examples/ folder for a full example.
 

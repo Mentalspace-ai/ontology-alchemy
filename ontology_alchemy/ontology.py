@@ -5,7 +5,7 @@ from six import string_types
 
 class Ontology(object):
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         pass
 
     @classmethod
@@ -33,4 +33,4 @@ class Ontology(object):
                 raise RuntimeError("Must supply format argument when not loading from a filename")
             parsed = graph.parse(file_or_filename, format=format)
 
-        return cls()
+        return cls(parsed)

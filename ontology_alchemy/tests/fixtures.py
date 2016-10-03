@@ -4,6 +4,7 @@
 RDFS_TURTLE_ONTOLOGY = """
     @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+    @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
     @prefix exampleOntology: <http://example.com/namespace#> .
 
     exampleOntology:Thing a rdfs:Class;

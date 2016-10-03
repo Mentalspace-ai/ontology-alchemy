@@ -41,4 +41,6 @@ To work on the package locally, create a [virtualenv](http://docs.python-guide.o
 
     pip install -e .
 
+# Similar Projects
 
+* [Owlready](http://pythonhosted.org/Owlready/index.html) - Exposes a simple interface to load OWL ontologies and create instances as Python classes. Also includes a reasoner engine (HermiT). Main limitation is that it only works with OWL and only supports OWL XML serialization format.

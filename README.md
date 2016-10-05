@@ -50,6 +50,10 @@ To work on the package locally, create a [virtualenv](http://docs.python-guide.o
 
     pip install -e .
 
+To run the provided suite of unit-tests invoke using `nose`:
+
+    python setup.py nosetests
+
 ## Similar Projects
 
 * [rdflib](http://rdflib.readthedocs.io/en/stable/) - RDFlib is the de facto standard library for working with RDF and its various serialization formats in Python. It has extensive support for most of the used serialization formats and schema namespaces (such as OWL, RDFS and FOAF), as well as a number of triplestore-style graph iteration APIs and persistent store backend implementations. It does not however aim to cover the interaction between ontology definitions and programmatic instantiation of ontology-defined types. Most of its stores have also fallen out of date and so it does not offer out of the box a viable solution for large-scale persistence of knowledge graph data.

@@ -2,11 +2,22 @@ from rdflib import Graph
 from rdflib.util import guess_format
 from six import string_types
 
+from ontology_alchemy.builder import OntologyBuilder
+
 
 class Ontology(object):
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, namespace, **kwargs):
+        """
+        Initialize an ontology given a namespace.
+        A namespace encapsulates the full hierarchy of types and inheritance relations
+        described by the ontology.
+
+        """
+        self.namespace = namespace
+
+    def __getattr__(self, name):
+        return self.namespace[name]
 
     @classmethod
     def load(cls, file_or_filename, format=None):
@@ -25,12 +36,16 @@ class Ontology(object):
         """
         graph = Graph()
         if isinstance(file_or_filename, string_types):
+            # Load from given filename
             if not format:
                 format = guess_format(file_or_filename)
-            parsed = graph.parse(file_or_filename, format=format)
+            graph.parse(file_or_filename, format=format)
         else:
+            # Load from file-like buffer
             if not format:
                 raise RuntimeError("Must supply format argument when not loading from a filename")
-            parsed = graph.parse(file_or_filename, format=format)
+            graph.parse(file_or_filename, format=format)
 
-        return cls(parsed)
+        namespace = OntologyBuilder(graph).populate()
+
+        return cls(namespace)

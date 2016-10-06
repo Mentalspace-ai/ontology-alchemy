@@ -11,7 +11,7 @@ from hamcrest import (
 from rdflib import Literal
 from six import string_types
 
-from ontology_alchemy.base import RDFSClass, RDFSProperty
+from ontology_alchemy.base import RDFS_Class, RDFS_Property
 from ontology_alchemy.ontology import Ontology
 from ontology_alchemy.tests.fixtures import create_ontology_file_object, create_ontology
 
@@ -29,7 +29,7 @@ def test_rdfs_class_hierarchy_is_valid():
 
     assert_that(ontology.Thing, is_(instance_of(type)))
     assert_that(ontology.Thing.__bases__, contains_inanyorder(
-        RDFSClass,
+        RDFS_Class,
     ))
 
     assert_that(ontology.Organization, is_(instance_of(type)))
@@ -49,7 +49,7 @@ def test_rdfs_class_hierarchy_is_valid():
     assert_that(ontology.naics, is_(instance_of(type)))
     assert_that(ontology.naics.__name__, is_("naics"))
     assert_that(ontology.naics.__bases__, contains_inanyorder(
-        RDFSProperty,
+        RDFS_Property,
     ))
     assert_that(ontology.naics.__uri__, is_(instance_of(string_types)))
     assert_that(ontology.naics.__labels__, contains_inanyorder(

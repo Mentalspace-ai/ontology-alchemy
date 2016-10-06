@@ -6,7 +6,7 @@ from six import text_type
 from six.moves.urllib.parse import urldefrag, urlparse
 from toposort import toposort
 
-from ontology_alchemy.base import RDFSClass, RDFSProperty
+from ontology_alchemy.base import RDFS_Class, RDFS_Property
 from ontology_alchemy.schema import (
     is_a_property,
     is_comment_predicate,
@@ -65,7 +65,7 @@ class OntologyBuilder(object):
     def add_class(self, class_uri, base_class_uris=None, is_property=False):
         class_name = self._extract_name(class_uri)
 
-        base_classes = (RDFSProperty,) if is_property else (RDFSClass,)
+        base_classes = (RDFS_Property,) if is_property else (RDFS_Class,)
         if base_class_uris:
             base_classes = tuple(
                 self.namespace[self._extract_name(base_class_uri)]

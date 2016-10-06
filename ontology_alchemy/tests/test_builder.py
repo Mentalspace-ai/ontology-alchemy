@@ -1,4 +1,6 @@
 """Unit-tests for the core ontology module."""
+from unittest import skip
+
 from hamcrest import (
     assert_that,
     calling,
@@ -59,10 +61,8 @@ def test_rdfs_class_hierarchy_is_valid():
 
 def test_core_rdfs_properties_for_a_class_instance_work():
     ontology = create_ontology()
-
     label = "Acme Inc."
     comment = Literal("Acme Inc. es un fabricante de paneles solares", lang="es")
-
     instance = ontology.Organization(
         label=label,
         comment=comment
@@ -72,7 +72,48 @@ def test_core_rdfs_properties_for_a_class_instance_work():
     assert_that(instance.comment(lang="es"), is_(equal_to(comment.value)))
 
 
-def test_nonexistant_label_language_raises_key_error():
+def test_valid_domain_property_assigment_for_a_class_instance_work():
+    ontology = create_ontology()
+    domain_instance = ontology.Organization(
+        label="Acme Inc.",
+    )
+    range_instance = ontology.Person(
+        label="John Doe",
+    )
+    domain_instance.hasEmployee += range_instance
+
+    assert_that(domain_instance.hasEmployee(range_instance), is_(True))
+
+
+@skip("TODO")
+def test_direct_assigment_for_a_class_instance_property_raises_value_error():
+    ontology = create_ontology()
+    domain_instance = ontology.Organization(
+        label="Acme Inc.",
+    )
+
+    def invalid_assigment_clause():
+        domain_instance.hasEmployee = "some-value"
+
+    assert_that(calling(invalid_assigment_clause), raises(ValueError))
+
+
+def test_invalid_domain_property_assigment_for_a_class_instance_raises_value_error():
+    ontology = create_ontology()
+    domain_instance = ontology.Organization(
+        label="Acme Inc.",
+    )
+    range_instance = ontology.Country(
+        label="UnitedStates",
+    )
+
+    def invalid_assigment_clause():
+        domain_instance.hasEmployee += range_instance
+
+    assert_that(calling(invalid_assigment_clause), raises(ValueError))
+
+
+def test_nonexistant_property_language_tag_raises_key_error():
     ontology = create_ontology()
     instance = ontology.Organization(label="Acme Inc.")
 

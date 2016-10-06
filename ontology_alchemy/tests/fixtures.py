@@ -16,6 +16,11 @@ RDFS_TURTLE_ONTOLOGY = """
         rdfs:comment "Base class for all things"@en;
         skos:exactMatch <http://schema.org/Thing>;
         .
+    exampleOntology:Country a rdfs:Class;
+        rdfs:label "Country"@en;
+        rdfs:comment "a nation with its own government, occupying a particular territory."@en;
+        rdfs:subClassOf exampleOntology:Thing;
+        .
     exampleOntology:Organization a rdfs:Class;
         rdfs:label "Organization"@en;
         rdfs:comment "An organization such as a school, NGO, corporation, club, etc."@en;
@@ -40,6 +45,12 @@ RDFS_TURTLE_ONTOLOGY = """
         rdfs:domain exampleOntology:Organization;
         rdfs:range rdfs:Literal;
         rdfs:comment "The North American Industry Classification System (NAICS) code."
+        .
+    exampleOntology:hasEmployee a rdf:Property;
+        rdfs:label "hasEmployee"@en;
+        rdfs:domain exampleOntology:Organization;
+        rdfs:range exampleOntology:Person;
+        rdfs:comment "Signify a given Organization has a given Person as an employee"
         .
     """
 

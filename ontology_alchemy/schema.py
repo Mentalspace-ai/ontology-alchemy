@@ -24,7 +24,13 @@ def is_a_property(uri):
     )
 
 
-def is_a_literal(value):
+def is_a_literal(uri):
+    return uri in (
+        RDFS.Literal,
+    )
+
+
+def is_literal_value(value):
     return (
         isinstance(value, Literal) or
         isinstance(value, string_types)

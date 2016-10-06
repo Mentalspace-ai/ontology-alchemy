@@ -5,6 +5,7 @@ from rdflib import Literal
 from six import string_types, text_type, with_metaclass
 
 from ontology_alchemy.constants import DEFAULT_LANGUAGE_TAG
+from ontology_alchemy.proxy import PropertyProxy
 from ontology_alchemy.session import Session
 
 
@@ -18,6 +19,7 @@ class RDFS_ClassMeta(type):
     """
     def __new__(meta_cls, name, bases, dct):
         dct.setdefault("__labels__", [])
+        dct.setdefault("__properties__", [])
         dct.setdefault("__uri__", None)
 
         return super(RDFS_ClassMeta, meta_cls).__new__(meta_cls, name, bases, dct)
@@ -36,8 +38,8 @@ class RDFS_PropertyMeta(RDFS_ClassMeta):
 
     """
     def __new__(cls, name, parents, dct):
-        dct.setdefault("__domain__", [])
-        dct.setdefault("__range__", [])
+        dct.setdefault("__domain__", None)
+        dct.setdefault("__range__", None)
 
         return super(RDFS_PropertyMeta, cls).__new__(cls, name, parents, dct)
 
@@ -50,16 +52,34 @@ class RDFS_Class(with_metaclass(RDFS_ClassMeta)):
     """
 
     def __init__(self, label=None, comment=None, *args, **kwargs):
-        self._literal_properties = defaultdict(set)
+        # XXX Need to set the literal properties registry like this since it is used
+        # for evaluating assigments in __setattr__ below.
+        super(RDFS_Class, self).__setattr__("_literal_properties", defaultdict(set))
 
         if label:
-            self.add_literal_property("label", label)
+            self.assign_literal_property("label", label)
         if comment:
-            self.add_literal_property("comment", comment)
+            self.assign_literal_property("comment", comment)
+
+        for property_class in self.__class__.__properties__:
+            setattr(self, property_class.__name__, PropertyProxy.for_(property_class))
 
         Session.get_current().register_instance(self)
 
-    def add_literal_property(self, property_name, value):
+    def __setattr__(self, name, value):
+        if name in self._literal_properties:
+            # Is a known literal-valued property
+            self.assign_literal_property(name, value)
+        # elif getattr(self, name) and isinstance(getattr(self, name), PropertyProxy):
+        #     self.assign_domain_property(name, value)
+        else:
+            super(RDFS_Class, self).__setattr__(name, value)
+
+    def assign_domain_property(self, property_name, value):
+        property_proxy = getattr(self, property_name)
+        property_proxy.assign(value)
+
+    def assign_literal_property(self, property_name, value):
         if isinstance(value, Literal):
             # Value already wrapped in rdflib.Literal, no-op
             pass

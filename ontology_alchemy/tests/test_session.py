@@ -13,10 +13,12 @@ from ontology_alchemy.tests.fixtures import create_ontology
 def assert_session_matches_expected(session, ontology):
     assert_that(session.classes, contains_inanyorder(
         ontology.Corporation,
+        ontology.Country,
         ontology.Thing,
         ontology.GovernmentOrganization,
         ontology.Organization,
         ontology.Person,
+        ontology.hasEmployee,
         ontology.naics,
     ))
 

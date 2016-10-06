@@ -9,6 +9,7 @@ from toposort import toposort
 from ontology_alchemy.base import RDFS_Class, RDFS_Property
 from ontology_alchemy.schema import (
     is_a_property,
+    is_a_literal,
     is_comment_predicate,
     is_domain_predicate,
     is_label_predicate,
@@ -59,6 +60,7 @@ class OntologyBuilder(object):
                 self._asserted_statements.add((s, p, o))
 
         self._build_class_hierarchy()
+        self._build_property_proxies()
 
         return self.namespace
 
@@ -88,15 +90,14 @@ class OntologyBuilder(object):
 
     def add_property_domain(self, property_uri, domain_uri):
         property_name = self._extract_name(property_uri)
-        self.namespace[property_name].__domain__.append(
-            domain_uri
-        )
+        domain_name = self._extract_name(domain_uri)
+        domain_cls = self.namespace[domain_name]
+        self.namespace[property_name].__domain__ = domain_cls
 
     def add_property_range(self, property_uri, range_uri):
         property_name = self._extract_name(property_uri)
-        self.namespace[property_name].__range__.append(
-            range_uri
-        )
+        range_cls = self._resolve_range(range_uri)
+        self.namespace[property_name].__range__ = range_cls
 
     def add_label(self, class_uri, label, lang="en"):
         class_name = self._extract_name(class_uri)
@@ -130,6 +131,19 @@ class OntologyBuilder(object):
             parsed_url = urlparse(s)
             if parsed_url.fragment:
                 return "{}#".format(urldefrag(s)[0])
+
+    def _resolve_range(self, range_uri):
+        """
+        Resolve a rdfs.Property rdfs.range value to a type.
+
+        """
+        if is_a_literal(range_uri):
+            return Literal
+
+        range_name = self._extract_name(range_uri)
+        range_cls = self.namespace[range_name]
+
+        return range_cls
 
     def _build_class_hierarchy(self):
         """
@@ -165,3 +179,14 @@ class OntologyBuilder(object):
                 self.add_property_domain(s, o)
             elif is_range_predicate(p):
                 self.add_property_range(s, o)
+
+    def _build_property_proxies(self):
+        """
+        Build `PropertyProxy` instances for all (Class, Property) pairs
+        that are specified via an rdfs.domain statement.
+
+        """
+        for cls in self.namespace.values():
+            if issubclass(cls, RDFS_Property):
+                domain_class = cls.__domain__
+                domain_class.__properties__.append(cls)

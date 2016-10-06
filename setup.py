@@ -16,6 +16,7 @@ setup(
     zip_safe=False,
     keywords="ontology-alchemy",
     install_requires=[
+        "contextlib2>=0.5.4",
         "rdflib>=4.2.1",
         "six>=1.10.0",
         "toposort>=1.4",

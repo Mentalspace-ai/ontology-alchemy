@@ -1,5 +1,5 @@
 """The session is a global context for all objects created from an Ontology."""
-from contextlib import contextmanager
+from contextlib2 import contextmanager
 
 
 class Session(object):

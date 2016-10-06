@@ -17,7 +17,7 @@ RDFS_TURTLE_ONTOLOGY = """
         rdfs:comment "An organization such as a school, NGO, corporation, club, etc."@en;
         rdfs:subClassOf exampleOntology:Thing;
         .
-        exampleOntology:Corporation a rdfs:Class;
+    exampleOntology:Corporation a rdfs:Class;
         rdfs:label "Corporation"@en;
         rdfs:comment "A business corporation."@en;
         rdfs:subClassOf exampleOntology:Organization;
@@ -30,5 +30,11 @@ RDFS_TURTLE_ONTOLOGY = """
     exampleOntology:Person a rdfs:Class;
         rdfs:label "Person"@en;
         rdfs:subClassOf exampleOntology:Thing;
+        .
+    exampleOntology:naics a rdf:Property;
+        rdfs:label "naics"@en;
+        rdfs:domain exampleOntology:Organization;
+        rdfs:range rdfs:Literal;
+        rdfs:comment "The North American Industry Classification System (NAICS) code."
         .
     """

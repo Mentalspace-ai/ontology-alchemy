@@ -7,13 +7,33 @@ Some of the primary mappings of interest include:
 * the rdfs:subClassOf property type which should be mapped to an inheritance relation
 
 """
-from rdflib import RDF, RDFS, OWL
+from rdflib import RDF, RDFS, OWL, Literal
+from six import string_types
 
 
-def is_class_predicate(predicate):
-    return predicate in (
+def is_a_class(uri):
+    return uri in (
         RDFS.Class,
         OWL.Class,
+    )
+
+
+def is_a_property(uri):
+    return uri in (
+        RDF.Property,
+    )
+
+
+def is_a_literal(value):
+    return (
+        isinstance(value, Literal) or
+        isinstance(value, string_types)
+    )
+
+
+def is_comment_predicate(predicate):
+    return predicate in (
+        RDFS.comment,
     )
 
 
@@ -24,15 +44,6 @@ def is_label_predicate(predicate):
 
 
 def is_type_predicate(predicate):
-    return predicate == RDF.type
-
-
-def rdf_iterator_sort_func(statement):
-    s, p, o = statement
-    try:
-        return {
-            RDF.type: 0,
-            RDFS.subClassOf: 1
-        }[p]
-    except KeyError:
-        return float("inf")
+    return predicate in (
+        RDF.type,
+    )

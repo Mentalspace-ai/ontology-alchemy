@@ -30,9 +30,19 @@ from ontology_alchemy import Ontology, Session
 ontology = Ontology.load("my-ontology.ttl")
 
 # Can then define particular instances and assign properties and relations.
-country = ontology.Country(label="United States")
-language = ontology.Language(label="English")
-country.officialLanguage = language
+united_states = ontology.Country(label="United States", comment="United States of America")
+print(united_states.label(lang="en"))
+print(united_states.comment(lang="en"))
+
+us_dollar = ontology.Currency(label="U.S Dollar")
+american_english = ontology.Language(label="American English")
+
+# The following assignment will raise an exception: officialLanguage
+# is a rdfs.Property which expects Language as its domain
+united_states.officialLanguage = us_dollar
+
+# This will work:
+united_states.officialLanguage = american_english
 
 # Interfacing with a persistent backend is easy by using the `Session` object:
 
@@ -41,7 +51,7 @@ print session.instances
 
 # Stream RDF statements capturing all class instances, properties and relations created
 for (subject, predicate, object) in session.rdf_statements():
-	print(subject, predicate, object)
+    print(subject, predicate, object)
 ```
 
 See the examples/ folder for a full example.

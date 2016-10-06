@@ -18,7 +18,7 @@ setup(
     install_requires=[
         "rdflib>=4.2.1",
         "six>=1.10.0",
-        "transitions>=0.4.1",
+        "toposort>=1.4",
     ],
     setup_requires=[
         "nose>=1.3.6",

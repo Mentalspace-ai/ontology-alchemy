@@ -1,3 +1,65 @@
+"""The session is a global context for all objects created from an Ontology."""
+from contextlib import ContextDecorator, contextmanager
+
 
 class Session(object):
-    pass
+    """
+    The session object encapsulates a global context for objects created
+    with respect to an ontology.
+
+    By default a single session object is created and can be retrieved
+    with Session.get_current().
+    Additionally, sessions can be pushed unto a stack for limiting scope
+    using the `session_context` context manager:
+
+    >>> with session_context() as session:
+    ...     # Create ontology, instantiate classes
+    ...     ontology = Ontology.load("my-ontology.ttl")
+    ...     instance = ontology.Corporation(label="Acme Inc.")
+    ...     assert instance in Session.get_current().instances
+    ... assert instance not in Session.get_current().instances
+
+    """
+    stack = []
+
+    def __init__(self, classes=None, instances=None):
+        self.classes = classes or []
+        self.instances = instances or []
+
+    @classmethod
+    def get_current(cls):
+        return cls.stack[-1]
+
+    def clear(self):
+        self.classes = []
+        self.instances = []
+
+    def register_class(self, klass):
+        """
+        Register a new Python class corresponding to an Ontology class.
+
+        :param klass - the Python class to register
+
+        """
+        self.classes.append(klass)
+
+    def register_instance(self, instance):
+        """
+        Register a new instance of a Python class corresponding to an Ontology class.
+
+        :param instance - the Python class instance to register
+
+        """
+        self.instances.append(instance)
+
+
+@contextmanager
+def session_context():
+    session = Session()
+    Session.stack.append(session)
+    yield session
+    Session.stack.pop()
+
+
+# Populate default session
+Session.stack.append(Session())

@@ -37,13 +37,31 @@ def is_comment_predicate(predicate):
     )
 
 
+def is_domain_predicate(predicate):
+    return predicate in (
+        RDFS.domain,
+    )
+
+
 def is_label_predicate(predicate):
     return predicate in (
         RDFS.label,
     )
 
 
+def is_range_predicate(predicate):
+    return predicate in (
+        RDFS.range,
+    )
+
+
 def is_type_predicate(predicate):
     return predicate in (
         RDF.type,
+    )
+
+
+def is_sub_class_predicate(predicate):
+    return predicate in (
+        RDFS.subClassOf,
     )

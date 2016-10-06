@@ -1,34 +1,31 @@
+from collections import defaultdict
 from logging import getLogger
 
 from rdflib import Literal, RDF, RDFS
 from six.moves.urllib.parse import urldefrag, urlparse
-from transitions import Machine, State
+from toposort import toposort
 
-from ontology_alchemy.base import OntologyClass
+from ontology_alchemy.base import RDFSClass, RDFSProperty
 from ontology_alchemy.schema import (
+    is_a_property,
+    is_comment_predicate,
+    is_domain_predicate,
+    is_label_predicate,
+    is_range_predicate,
+    is_sub_class_predicate,
     is_type_predicate,
 )
 
 
-class BuilderState:
-    PROCESS_TYPES = "process_types"
-    PROCESS_LITERALS = "process_literals"
-    PROCESS_RELATIONS = "process_relations"
-
-
 class OntologyBuilder(object):
-
-    # Define the ontology builder state machine states
-    STATES = [
-        State(BuilderState.PROCESS_TYPES, on_exit=["toposort_types"]),
-        State(BuilderState.PROCESS_LITERALS),
-        State(BuilderState.PROCESS_RELATIONS, on_exit=["assign_relational_properties"])
-    ]
 
     def __init__(self, graph, base_uri=None):
         """
         Build the Python class hierarchy representing the ontology given
         its triplestore graph.
+
+        The supported vocabulary of asserted statements consists of the
+        RDF Schema classes and properties as defined in https://www.w3.org/TR/rdf-schema/
 
         :param graph - the populated `rdflib.Graph` instance for the Ontology
         :param base_uri - The base URI namespace for the Ontology. If not provided,
@@ -39,23 +36,11 @@ class OntologyBuilder(object):
         self.namespace = {}
         self.logger = getLogger(__name__)
 
-        self.state_machine = Machine(
-            model=self,
-            states=OntologyBuilder.STATES,
-            initial=BuilderState.PROCESS_TYPES
-        )
+        self._type_graph = {}
+        self._sub_class_graph = defaultdict(set)
+        self._asserted_statements = set()
 
-        self.state_machine.add_transition(
-            "run_state_machine",
-            BuilderState.PROCESS_TYPES,
-            BuilderState.PROCESS_LITERALS,
-            before="process_statement",
-            conditions=["is_done_processing_types"],
-        )
-
-        self._properties_accumulator = {}
-
-    def populate(self):
+    def build_namespace(self):
         """
         Iterate over all RDF statements describing ontology in a stable ordering
         that guarantees type definitions and inheritance relationships are evaluated first,
@@ -64,39 +49,31 @@ class OntologyBuilder(object):
         :returns {dict} namespace containing all the defined Python classes
 
         """
-        def rdf_iterator_sort_func(statement):
-            _, p, _ = statement
-            try:
-                return {
-                    RDF.type: 0,
-                    RDFS.subClassOf: 1
-                }[p]
-            except KeyError:
-                return float("inf")
+        for s, p, o in self.graph:
+            if is_type_predicate(p):
+                self._type_graph[s] = o
+            elif is_sub_class_predicate(p):
+                self._sub_class_graph[s].add(o)
+            else:
+                self._asserted_statements.add((s, p, o))
 
-        for s, p, o in sorted(self.graph, key=rdf_iterator_sort_func):
-            self.logger.debug("populate() - indexing triplet (s, p, o) = (%s, %s, %s)", s, p, o)
-            if self.state == BuilderState.PROCESS_TYPES:
-                self.process_type_statement((s, p, o))  # self.process_statement((s, p, o))
+        self._build_class_hierarchy()
 
         return self.namespace
 
-    def process_type_statement(self, statement):
-        class_uri, _, _ = statement
-        self.add_class(class_uri)
-
-    def is_done_processing_types(self, statement):
-        _, p, _ = statement
-        return not is_type_predicate(p)
-
-    def toposort_types(self, *args, **kwargs):
-        return
-
-    def add_class(self, class_uri):
+    def add_class(self, class_uri, base_class_uris=None, is_property=False):
         class_name = self._extract_name(class_uri)
+
+        base_classes = (RDFSProperty,) if is_property else (RDFSClass,)
+        if base_class_uris:
+            base_classes = tuple(
+                self.namespace[self._extract_name(base_class_uri)]
+                for base_class_uri in base_class_uris
+            )
+
         self.namespace[class_name] = type(
             class_name,
-            (OntologyClass,),
+            base_classes,
             {"__uri__": class_uri}
         )
         self.logger.debug("_add_class() - Added class: %s", class_name)
@@ -107,6 +84,18 @@ class OntologyBuilder(object):
         # the class' __doc__.
         class_name = self._extract_name(class_uri)
         self.namespace[class_name].__doc__ = comment
+
+    def add_property_domain(self, property_uri, domain_uri):
+        property_name = self._extract_name(property_uri)
+        self.namespace[property_name].__domain__.append(
+            domain_uri
+        )
+
+    def add_property_range(self, property_uri, range_uri):
+        property_name = self._extract_name(property_uri)
+        self.namespace[property_name].__range__.append(
+            range_uri
+        )
 
     def add_label(self, class_uri, label, lang="en"):
         class_name = self._extract_name(class_uri)
@@ -138,3 +127,38 @@ class OntologyBuilder(object):
             parsed_url = urlparse(s)
             if parsed_url.fragment:
                 return "{}#".format(urldefrag(s)[0])
+
+    def _build_class_hierarchy(self):
+        """
+        Given the graphs of rdf:type and rdfs:subClassOf relations,
+        build the class hierarchy.
+        We use topological sort to build the hierarchy in order of
+        dependencies and to identify any circular dependencies.
+
+        For reference on the logic rules governing type and subClassOf relations
+        see the diagrams here: http://liris.cnrs.fr/~pchampin/2001/rdf-tutorial/node14.html
+
+        """
+        for uri in self._type_graph:
+            if uri not in self._sub_class_graph:
+                # Make sure all types are represented in the sub class graph by adding self links.
+                self._sub_class_graph[uri].add(uri)
+
+        for classes in toposort(self._sub_class_graph):
+            for class_uri in classes:
+                is_property = is_a_property(self._type_graph[class_uri])
+                self.add_class(
+                    class_uri,
+                    base_class_uris=self._sub_class_graph[class_uri],
+                    is_property=is_property
+                )
+
+        for s, p, o in self._asserted_statements:
+            if is_label_predicate(p):
+                self.add_label(s, o)
+            elif is_comment_predicate(p):
+                self.add_comment(s, o)
+            elif is_domain_predicate(p):
+                self.add_property_domain(s, o)
+            elif is_range_predicate(p):
+                self.add_property_range(s, o)

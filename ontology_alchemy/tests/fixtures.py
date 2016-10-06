@@ -1,4 +1,8 @@
 """Fixture data used by the unit-tests."""
+from six import StringIO
+
+from ontology_alchemy.ontology import Ontology
+
 
 # Ontology serialized in Turtle, using RDFS vocabulary.
 RDFS_TURTLE_ONTOLOGY = """
@@ -38,3 +42,11 @@ RDFS_TURTLE_ONTOLOGY = """
         rdfs:comment "The North American Industry Classification System (NAICS) code."
         .
     """
+
+
+def create_ontology_file_object():
+    return StringIO(RDFS_TURTLE_ONTOLOGY)
+
+
+def create_ontology():
+    return Ontology.load(create_ontology_file_object(), format="turtle")

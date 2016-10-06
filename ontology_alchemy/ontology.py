@@ -46,6 +46,6 @@ class Ontology(object):
                 raise RuntimeError("Must supply format argument when not loading from a filename")
             graph.parse(file_or_filename, format=format)
 
-        namespace = OntologyBuilder(graph).populate()
+        namespace = OntologyBuilder(graph).build_namespace()
 
         return cls(namespace)

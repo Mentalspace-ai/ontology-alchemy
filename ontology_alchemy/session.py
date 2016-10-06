@@ -1,5 +1,5 @@
 """The session is a global context for all objects created from an Ontology."""
-from contextlib import ContextDecorator, contextmanager
+from contextlib import contextmanager
 
 
 class Session(object):
@@ -10,7 +10,7 @@ class Session(object):
     By default a single session object is created and can be retrieved
     with Session.get_current().
     Additionally, sessions can be pushed unto a stack for limiting scope
-    using the `session_context` context manager:
+    using the `session_context` method, when used as a context manager or decorator:
 
     >>> with session_context() as session:
     ...     # Create ontology, instantiate classes
@@ -31,6 +31,10 @@ class Session(object):
         return cls.stack[-1]
 
     def clear(self):
+        """
+        Clear the session instance of all registered objects.
+
+        """
         self.classes = []
         self.instances = []
 

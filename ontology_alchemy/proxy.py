@@ -35,7 +35,6 @@ class PropertyProxy(object):
             raise ValueError("{}({}): Invalid assigment. property value must be one of range={}, but got: {}"
                              .format(self.__class__.__name__, self.name, self.range, value))
 
-
         self.add_instance(value)
         return self
 

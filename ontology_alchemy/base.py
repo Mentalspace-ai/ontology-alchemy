@@ -19,12 +19,16 @@ class RDFS_ClassMeta(type):
         dct.setdefault("__properties__", [])
         dct.setdefault("__uri__", None)
 
-        dct.setdefault("label", LiteralPropertyProxy(name="label"))
-        dct.setdefault("comment", LiteralPropertyProxy(name="comment"))
-
         return super(RDFS_ClassMeta, meta_cls).__new__(meta_cls, name, bases, dct)
 
     def __init__(cls, name, bases, dct):
+        # Define proxies for the core RDFS properties as defined in the RDF Schema specification
+        cls.label = LiteralPropertyProxy(name="label")
+        cls.comment = LiteralPropertyProxy(name="comment")
+        cls.seeAlso = PropertyProxy(name="seeAlso")
+        cls.isDefinedBy = PropertyProxy(name="isDefinedBy")
+        cls.value = PropertyProxy(name="value")
+
         Session.get_current().register_class(cls)
         return super(RDFS_ClassMeta, cls).__init__(name, bases, dct)
 
@@ -37,11 +41,12 @@ class RDFS_PropertyMeta(RDFS_ClassMeta):
     to an RDFS.Property resource.
 
     """
-    def __new__(cls, name, parents, dct):
-        dct.setdefault("domain", PropertyProxy(name="domain"))
-        dct.setdefault("range", PropertyProxy(name="range"))
+    def __init__(cls, name, bases, dct):
+        # Define proxies for the core RDFS properties as defined in the RDF Schema specification
+        cls.domain = PropertyProxy(name="domain")
+        cls.range = PropertyProxy(name="range")
 
-        return super(RDFS_PropertyMeta, cls).__new__(cls, name, parents, dct)
+        return super(RDFS_PropertyMeta, cls).__init__(name, bases, dct)
 
 
 class RDFS_Class(with_metaclass(RDFS_ClassMeta)):

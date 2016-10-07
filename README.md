@@ -29,29 +29,73 @@ from ontology_alchemy import Ontology, Session
 # Load ontology definition, create all Python classes
 ontology = Ontology.load("my-ontology.ttl")
 
-# Can then define particular instances and assign properties and relations.
+# Can then define particular instances.
+china = ontology.Country(label="China", comment="People's Republic of China")
 united_states = ontology.Country(label="United States", comment="United States of America")
+
 print(united_states.label(lang="en"))
 print(united_states.comment(lang="en"))
 
 us_dollar = ontology.Currency(label="U.S Dollar")
 american_english = ontology.Language(label="American English")
+mandarin = ontology.Language(label="Mandarin")
+cantonese = ontology.Language(label="Cantonese")
+```
+
+**Property** assigment and access is fairly intuitive as well:
+
+```python
+# Property assigments are done using += to reflect the fact that multiple "edges"
+# of a particular type (predicate) can exist for an object
+china.officialLanguage += mandarin
+china.officialLanguage += cantonese
+
+# Can assert if a particular property assigment already exists
+print(china.officialLanguage(mandarin))  # Will evaluate to true
 
 # The following assignment will raise an exception: officialLanguage
-# is a rdfs.Property which expects Language as its domain
-united_states.officialLanguage = us_dollar
+# is a property (rdf:Property) which has Language as its domain
+united_states.officialLanguage += us_dollar
+```
 
-# This will work:
-united_states.officialLanguage = american_english
+**Inheritance** works as expected. All sub-classes of a given class will inherit it's properties:
 
-# Interfacing with a persistent backend is easy by using the `Session` object:
+```python
+# Actor is a hypothetical type that is defined a a rdfs:subClassOf Person,
+# which in turn defines a 'marriedTo' property.
+brad = ontology.Actor(label="Brad Pitt")
+angelina = ontology.Actor(label="Angelina Jolie")
 
-# Get all programmatic class instances created since beginning of session
-print session.instances
+brad.marriedTo += angelina
+```
+
+Interfacing with a persistent backend is easy by leveraging the `Session` interface
+to enumerate all created classes and instances. These can then be fed into any storage backend
+by writing appropriate glue layer:
+
+```python
+from ontology_alchemy.session import Session
+
+# Get all programmatic class instances created since process started
+session = Session.get_current()
+print(session.classes)
 
 # Stream RDF statements capturing all class instances, properties and relations created
 for (subject, predicate, object) in session.rdf_statements():
     print(subject, predicate, object)
+```
+
+Sessions can also be scoped using the provided context manager and decorator interfaces.
+
+```python
+from ontology_alchemy.session import Session, session_context
+
+with session_context() as session:
+    ontology = Ontology.load("my-ontology.ttl")
+    print(session.classes)  # Will print all Python classes corresponding to ontology classes
+
+session = Session.get_current()
+print(session.classes)  # Will be empty - session_context above defined a local session scope
 ```
 
 See the examples/ folder for a full example.

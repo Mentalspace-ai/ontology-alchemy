@@ -96,7 +96,7 @@ class RDFS_Class(with_metaclass(RDFS_ClassMeta)):
                 property_name = value.name
                 property_uri = value.uri
                 for property_value in getattr(self, property_name):
-                    yield (self.uri, property_uri , property_value)
+                    yield (self.uri, property_uri, property_value)
 
 
 class RDFS_Property(with_metaclass(RDFS_PropertyMeta, RDFS_Class)):

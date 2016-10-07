@@ -10,7 +10,7 @@ from hamcrest import (
     is_,
     raises,
 )
-from rdflib import Literal, RDFS
+from rdflib import Literal
 
 from ontology_alchemy.tests.fixtures import create_ontology
 

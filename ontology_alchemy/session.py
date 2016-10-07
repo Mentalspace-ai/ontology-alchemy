@@ -1,4 +1,6 @@
 """The session is a global context for all objects created from an Ontology."""
+from itertools import chain
+
 from contextlib2 import contextmanager
 
 

@@ -90,13 +90,13 @@ class OntologyBuilder(object):
     def add_property_domain(self, property_uri, domain_uri):
         property_name = self._extract_name(property_uri)
         domain_name = self._extract_name(domain_uri)
-        domain_cls = self.namespace[domain_name]
-        self.namespace[property_name].__domain__ = domain_cls
+        domain_class = self.namespace[domain_name]
+        self.namespace[property_name].__domain__ = domain_class
 
     def add_property_range(self, property_uri, range_uri):
         property_name = self._extract_name(property_uri)
-        range_cls = self._resolve_range(range_uri)
-        self.namespace[property_name].__range__ = range_cls
+        range_class = self._resolve_range(range_uri)
+        self.namespace[property_name].__range__ = range_class
 
     def add_label(self, class_uri, label, lang="en"):
         class_name = self._extract_name(class_uri)
@@ -140,9 +140,9 @@ class OntologyBuilder(object):
             return Literal
 
         range_name = self._extract_name(range_uri)
-        range_cls = self.namespace[range_name]
+        range_class = self.namespace[range_name]
 
-        return range_cls
+        return range_class
 
     def _build_class_hierarchy(self):
         """
@@ -185,7 +185,11 @@ class OntologyBuilder(object):
         that are specified via an rdfs.domain statement.
 
         """
-        for cls in self.namespace.values():
-            if issubclass(cls, RDFS_Property):
-                domain_class = cls.__domain__
-                domain_class.__properties__.append(cls)
+        for klass in self.namespace.values():
+            if issubclass(klass, RDFS_Property):
+                self._propagate_property(klass, klass.__domain__)
+
+    def _propagate_property(self, property_class, base_class):
+            base_class.__properties__.append(property_class)
+            for subclass in base_class.__subclasses__():
+                self._propagate_property(property_class, subclass)

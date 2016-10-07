@@ -2,7 +2,6 @@ from collections import defaultdict
 from logging import getLogger
 
 from rdflib import Literal, RDF
-from six import text_type
 from six.moves.urllib.parse import urldefrag, urlparse
 from toposort import toposort
 
@@ -110,7 +109,7 @@ class OntologyBuilder(object):
         self.namespace[property_name] = {}
 
     def _extract_name(self, uri):
-        return text_type(
+        return str(
             uri.replace(self.base_uri, "")
         )
 

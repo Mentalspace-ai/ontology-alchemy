@@ -6,6 +6,7 @@ from six.moves.urllib.parse import urldefrag, urlparse
 from toposort import toposort
 
 from ontology_alchemy.base import RDFS_Class, RDFS_Property
+from ontology_alchemy.constants import DEFAULT_LANGUAGE_TAG
 from ontology_alchemy.schema import (
     is_a_property,
     is_a_literal,
@@ -61,6 +62,8 @@ class OntologyBuilder(object):
         self._build_class_hierarchy()
         self._build_property_proxies()
 
+        self.namespace["__uri__"] = self.base_uri
+
         return self.namespace
 
     def add_class(self, class_uri, base_class_uris=None, is_property=False):
@@ -80,13 +83,6 @@ class OntologyBuilder(object):
         )
         self.logger.debug("_add_class() - Added class: %s", class_name)
 
-    def add_comment(self, class_uri, comment, lang="en"):
-        # XXX - For now we ignore language tags on comments and simply
-        # assume a single comment is provided for a class and use it as
-        # the class' __doc__.
-        class_name = self._extract_name(class_uri)
-        self.namespace[class_name].__doc__ = comment
-
     def add_property_domain(self, property_uri, domain_uri):
         property_name = self._extract_name(property_uri)
         domain_name = self._extract_name(domain_uri)
@@ -98,11 +94,18 @@ class OntologyBuilder(object):
         range_class = self._resolve_range(range_uri)
         self.namespace[property_name].__range__ = range_class
 
-    def add_label(self, class_uri, label, lang="en"):
+    def add_comment(self, class_uri, comment, lang=DEFAULT_LANGUAGE_TAG):
+        # XXX - For now we ignore language tags on comments and simply
+        # assume a single comment is provided for a class and use it as
+        # the class' __doc__.
         class_name = self._extract_name(class_uri)
-        self.namespace[class_name].__labels__.append(
-            Literal(label, lang=lang)
-        )
+        self.namespace[class_name].__doc__ = comment
+        self.namespace[class_name].comment += Literal(comment, lang=lang)
+
+
+    def add_label(self, class_uri, label, lang=DEFAULT_LANGUAGE_TAG):
+        class_name = self._extract_name(class_uri)
+        self.namespace[class_name].label += Literal(label, lang=lang)
 
     def add_property(self, property_uri):
         property_name = self._extract_name(property_uri)

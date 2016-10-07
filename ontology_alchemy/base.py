@@ -5,7 +5,7 @@ from rdflib import Literal
 from six import string_types, text_type, with_metaclass
 
 from ontology_alchemy.constants import DEFAULT_LANGUAGE_TAG
-from ontology_alchemy.proxy import PropertyProxy
+from ontology_alchemy.proxy import LiteralPropertyProxy, PropertyProxy
 from ontology_alchemy.session import Session
 
 
@@ -18,9 +18,11 @@ class RDFS_ClassMeta(type):
 
     """
     def __new__(meta_cls, name, bases, dct):
-        dct.setdefault("__labels__", [])
         dct.setdefault("__properties__", [])
         dct.setdefault("__uri__", None)
+
+        dct.setdefault("label", LiteralPropertyProxy(name="label"))
+        dct.setdefault("comment", LiteralPropertyProxy(name="comment"))
 
         return super(RDFS_ClassMeta, meta_cls).__new__(meta_cls, name, bases, dct)
 
@@ -51,63 +53,22 @@ class RDFS_Class(with_metaclass(RDFS_ClassMeta)):
 
     """
 
-    def __init__(self, label=None, comment=None, *args, **kwargs):
-        # XXX Need to set the literal properties registry like this since it is used
-        # for evaluating assigments in __setattr__ below.
-        super(RDFS_Class, self).__setattr__("_literal_properties", defaultdict(set))
-
-        if label:
-            self.assign_literal_property("label", label)
-        if comment:
-            self.assign_literal_property("comment", comment)
+    def __init__(self, **kwargs):
+        # Define proxies for the core RDFS properties as defined in the RDF Schema specification
+        self.label = LiteralPropertyProxy(name="label")
+        self.comment = LiteralPropertyProxy(name="comment")
+        self.seeAlso = PropertyProxy(name="seeAlso")
+        self.isDefinedBy = PropertyProxy(name="isDefinedBy")
+        self.value = PropertyProxy(name="value")
 
         for property_class in self.__class__.__properties__:
             setattr(self, property_class.__name__, PropertyProxy.for_(property_class))
 
+        for k, v in kwargs.items():
+            property_proxy = getattr(self, k)
+            property_proxy += v
+
         Session.get_current().register_instance(self)
-
-    def __setattr__(self, name, value):
-        if name in self._literal_properties:
-            # Is a known literal-valued property
-            self.assign_literal_property(name, value)
-        # elif getattr(self, name) and isinstance(getattr(self, name), PropertyProxy):
-        #     self.assign_domain_property(name, value)
-        else:
-            super(RDFS_Class, self).__setattr__(name, value)
-
-    def assign_domain_property(self, property_name, value):
-        property_proxy = getattr(self, property_name)
-        property_proxy.assign(value)
-
-    def assign_literal_property(self, property_name, value):
-        if isinstance(value, Literal):
-            # Value already wrapped in rdflib.Literal, no-op
-            pass
-        elif isinstance(value, string_types):
-            # Wrap string types with Literal and assign a default language tag
-            value = Literal(value, lang=DEFAULT_LANGUAGE_TAG)
-
-        self._literal_properties[property_name].add(value)
-
-    def get_literal_property(self, property_name, lang=None):
-        value_set = self._literal_properties[property_name]
-        if lang:
-            try:
-                return text_type(
-                    next(
-                        (literal for literal in value_set if literal.language == lang)
-                    )
-                )
-            except StopIteration:
-                raise KeyError("No label found for lang='{}'".format(lang))
-        else:
-            return value_set[0]
-
-    def label(self, lang=DEFAULT_LANGUAGE_TAG):
-        return self.get_literal_property("label", lang=lang)
-
-    def comment(self, lang=DEFAULT_LANGUAGE_TAG):
-        return self.get_literal_property("comment", lang=lang)
 
 
 class RDFS_Property(with_metaclass(RDFS_PropertyMeta, RDFS_Class)):

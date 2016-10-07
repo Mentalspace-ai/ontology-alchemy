@@ -11,7 +11,7 @@ from hamcrest import (
     raises,
 )
 from rdflib import Literal
-from six import string_types
+from six import string_types, text_type
 
 from ontology_alchemy.base import RDFS_Class, RDFS_Property
 from ontology_alchemy.ontology import Ontology
@@ -43,9 +43,11 @@ def test_rdfs_class_hierarchy_is_valid():
         ontology.Corporation,
         ontology.GovernmentOrganization,
     ))
-    assert_that(ontology.Organization.__uri__, is_(instance_of(string_types)))
-    assert_that(ontology.Organization.__labels__, contains_inanyorder(
-        Literal("Organization", lang="en")
+    assert_that(text_type(ontology.Organization.__uri__), is_(equal_to(
+        "{}{}".format(ontology.__uri__, ontology.Organization.__name__)
+    )))
+    assert_that(ontology.Organization.label(lang="en"), contains_inanyorder(
+        "Organization"
     ))
 
     assert_that(ontology.naics, is_(instance_of(type)))
@@ -54,80 +56,6 @@ def test_rdfs_class_hierarchy_is_valid():
         RDFS_Property,
     ))
     assert_that(ontology.naics.__uri__, is_(instance_of(string_types)))
-    assert_that(ontology.naics.__labels__, contains_inanyorder(
-        Literal("naics", lang="en")
+    assert_that(ontology.naics.label(lang="en"), contains_inanyorder(
+        "naics"
     ))
-
-
-def test_core_rdfs_properties_for_a_class_instance_work():
-    ontology = create_ontology()
-    label = "Acme Inc."
-    comment = Literal("Acme Inc. es un fabricante de paneles solares", lang="es")
-    instance = ontology.Organization(
-        label=label,
-        comment=comment
-    )
-
-    assert_that(instance.label(lang="en"), is_(equal_to(label)))
-    assert_that(instance.comment(lang="es"), is_(equal_to(comment.value)))
-
-
-def test_valid_domain_property_assigment_for_a_class_instance_work():
-    ontology = create_ontology()
-    domain_instance = ontology.Organization(
-        label="Acme Inc.",
-    )
-    range_instance = ontology.Person(
-        label="John Doe",
-    )
-    domain_instance.hasEmployee += range_instance
-
-    assert_that(domain_instance.hasEmployee(range_instance), is_(True))
-
-
-def test_valid_domain_property_assigment_for_a_subclass_instance_work():
-    ontology = create_ontology()
-    domain_instance = ontology.GovernmentOrganization(
-        label="Acme Inc.",
-    )
-    range_instance = ontology.Person(
-        label="John Doe",
-    )
-    domain_instance.hasEmployee += range_instance
-
-    assert_that(domain_instance.hasEmployee(range_instance), is_(True))
-
-
-@skip("TODO")
-def test_direct_assigment_for_a_class_instance_property_raises_value_error():
-    ontology = create_ontology()
-    domain_instance = ontology.Organization(
-        label="Acme Inc.",
-    )
-
-    def invalid_assigment_clause():
-        domain_instance.hasEmployee = "some-value"
-
-    assert_that(calling(invalid_assigment_clause), raises(ValueError))
-
-
-def test_invalid_domain_property_assigment_for_a_class_instance_raises_value_error():
-    ontology = create_ontology()
-    domain_instance = ontology.Organization(
-        label="Acme Inc.",
-    )
-    range_instance = ontology.Country(
-        label="UnitedStates",
-    )
-
-    def invalid_assigment_clause():
-        domain_instance.hasEmployee += range_instance
-
-    assert_that(calling(invalid_assigment_clause), raises(ValueError))
-
-
-def test_nonexistant_property_language_tag_raises_key_error():
-    ontology = create_ontology()
-    instance = ontology.Organization(label="Acme Inc.")
-
-    assert_that(calling(instance.label).with_args(lang="foo"), raises(KeyError))

@@ -1,4 +1,8 @@
 """Proxy objects."""
+from rdflib import Literal
+from six import string_types, text_type
+
+from ontology_alchemy.constants import DEFAULT_LANGUAGE_TAG
 
 
 class PropertyProxy(object):
@@ -15,7 +19,7 @@ class PropertyProxy(object):
         self.domain = domain
         self.range = range
 
-    def __call__(self, value=None, lang=None):
+    def __call__(self, value=None):
         return value in self.values
 
     def __iadd__(self, value):
@@ -23,7 +27,7 @@ class PropertyProxy(object):
             raise ValueError("Invalid assigment. property value must be of type {}, but got: {}"
                              .format(self.range, value))
 
-        self.values.append(value)
+        self.add_instance(value)
         return self
 
     @classmethod
@@ -34,6 +38,33 @@ class PropertyProxy(object):
             range=property_cls.__range__
         )
 
+    def add_instance(self, value):
+        self.values.append(value)
+
     def is_valid(self, value):
         if isinstance(value, self.range):
+            return True
+
+
+class LiteralPropertyProxy(PropertyProxy):
+    def __call__(self, lang=None):
+        if lang:
+            return [
+                text_type(literal)
+                for literal in self.values
+                if literal.language == lang
+            ] or None
+        else:
+            return self.values
+
+    def add_instance(self, value):
+        if not isinstance(value, Literal):
+            if isinstance(value, string_types):
+                value = Literal(value, lang=DEFAULT_LANGUAGE_TAG)
+
+        self.values.append(value)
+
+    def is_valid(self, value):
+        if (isinstance(value, Literal) or
+                isinstance(value, string_types)):
             return True

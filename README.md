@@ -54,7 +54,7 @@ china.officialLanguage += cantonese
 print(china.officialLanguage(mandarin))  # Will evaluate to true
 
 # The following assignment will raise an exception: officialLanguage
-# is a property (rdf:Property) which has Language as its domain
+# is a property (rdf:Property) which has Language as its range
 united_states.officialLanguage += us_dollar
 ```
 

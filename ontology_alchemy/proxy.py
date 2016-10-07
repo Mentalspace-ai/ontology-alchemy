@@ -2,7 +2,7 @@
 from rdflib import Literal
 from six import string_types, text_type
 
-from ontology_alchemy.constants import DEFAULT_LANGUAGE_TAG
+from ontology_alchemy.constants import DEFAULT_LANGUAGE_TAG, LITERAL_PRIMITIVE_TYPES
 
 
 class PropertyProxy(object):
@@ -77,11 +77,11 @@ class LiteralPropertyProxy(PropertyProxy):
     def add_instance(self, value):
         if not isinstance(value, Literal):
             if isinstance(value, string_types):
+                # if is a textual string, enforce assigning a language tag
                 value = Literal(value, lang=DEFAULT_LANGUAGE_TAG)
 
         self.values.append(value)
 
     def is_valid(self, value):
-        if (isinstance(value, Literal) or
-                isinstance(value, string_types)):
+        if isinstance(value, LITERAL_PRIMITIVE_TYPES):
             return True

@@ -52,6 +52,11 @@ RDFS_TURTLE_ONTOLOGY = """
         rdfs:range exampleOntology:Person;
         rdfs:comment "Signify a given Organization has a given Person as an employee"
         .
+    exampleOntology:hasExecutive a rdf:Property;
+        rdfs:label "hasExecutive"@en;
+        rdfs:subPropertyOf exampleOntology:hasEmployee;
+        rdfs:comment "Signify a given Organization has a given Person as an executive"
+        .
     """
 
 

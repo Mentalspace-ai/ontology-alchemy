@@ -70,4 +70,5 @@ def is_type_predicate(predicate):
 def is_sub_class_predicate(predicate):
     return predicate in (
         RDFS.subClassOf,
+        RDFS.subPropertyOf,
     )

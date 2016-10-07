@@ -16,33 +16,39 @@ class PropertyProxy(object):
     def __init__(self, name=None, values=None, domain=None, range=None):
         self.name = name
         self.values = values or []
-        self.domain = domain
-        self.range = range
+        self.domain = domain or []
+        self.range = range or []
 
     def __call__(self, value=None):
         return value in self.values
 
     def __iadd__(self, value):
         if not self.is_valid(value):
-            raise ValueError("Invalid assigment. property value must be of type {}, but got: {}"
-                             .format(self.range, value))
+            raise ValueError("Invalid assigment. property value must be one of types {}, but got: {}"
+                             .format(str(self.range), value))
 
         self.add_instance(value)
         return self
+
+    def __iter__(self):
+        return iter(self.values)
 
     @classmethod
     def for_(cls, property_cls):
         return PropertyProxy(
             name=property_cls.__name__,
-            domain=property_cls.__domain__,
-            range=property_cls.__range__
+            domain=property_cls.domain,
+            range=property_cls.range
         )
 
     def add_instance(self, value):
         self.values.append(value)
 
     def is_valid(self, value):
-        if isinstance(value, self.range):
+        if not self.range or any(
+            isinstance(value, range_resource)
+            for range_resource in self.range
+        ):
             return True
 
 

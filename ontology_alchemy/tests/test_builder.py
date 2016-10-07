@@ -54,3 +54,6 @@ def test_rdfs_class_hierarchy_is_valid():
     assert_that(ontology.naics.label(lang="en"), contains_inanyorder(
         "naics"
     ))
+    assert_that(ontology.naics.domain, contains_inanyorder(
+        ontology.Organization,
+    ))

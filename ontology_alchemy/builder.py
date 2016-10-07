@@ -87,28 +87,20 @@ class OntologyBuilder(object):
         property_name = self._extract_name(property_uri)
         domain_name = self._extract_name(domain_uri)
         domain_class = self.namespace[domain_name]
-        self.namespace[property_name].__domain__ = domain_class
+        self.namespace[property_name].domain += domain_class
 
     def add_property_range(self, property_uri, range_uri):
         property_name = self._extract_name(property_uri)
         range_class = self._resolve_range(range_uri)
-        self.namespace[property_name].__range__ = range_class
+        self.namespace[property_name].range += range_class
 
     def add_comment(self, class_uri, comment, lang=DEFAULT_LANGUAGE_TAG):
-        # XXX - For now we ignore language tags on comments and simply
-        # assume a single comment is provided for a class and use it as
-        # the class' __doc__.
         class_name = self._extract_name(class_uri)
-        self.namespace[class_name].__doc__ = comment
         self.namespace[class_name].comment += Literal(comment, lang=lang)
 
     def add_label(self, class_uri, label, lang=DEFAULT_LANGUAGE_TAG):
         class_name = self._extract_name(class_uri)
         self.namespace[class_name].label += Literal(label, lang=lang)
-
-    def add_property(self, property_uri):
-        property_name = self._extract_name(property_uri)
-        self.namespace[property_name] = {}
 
     def _extract_name(self, uri):
         return str(
@@ -189,11 +181,19 @@ class OntologyBuilder(object):
         that are specified via an rdfs.domain statement.
 
         """
+        visited = set()
+
         for klass in self.namespace.values():
             if issubclass(klass, RDFS_Property):
-                self._propagate_property(klass, klass.__domain__)
+                for property_class in set([klass] + klass.__subclasses__()) - visited:
+                    print("_build_property_proxies() - property_class: ", property_class)
+                    # XXX - We assume each sub-property inherits it's domain from it's parent.
+                    # This can be fixed by evaluating each sub-property's __bases__ to re-construct
+                    # full domain expression.
+                    self._propagate_property(property_class, klass.domain)
+                    visited.add(property_class)
 
-    def _propagate_property(self, property_class, base_class):
-            base_class.__properties__.append(property_class)
-            for subclass in base_class.__subclasses__():
-                self._propagate_property(property_class, subclass)
+    def _propagate_property(self, property_class, domain_classes):
+            for base_class in domain_classes:
+                base_class.__properties__.append(property_class)
+                self._propagate_property(property_class, base_class.__subclasses__())

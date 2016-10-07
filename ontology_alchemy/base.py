@@ -36,8 +36,8 @@ class RDFS_PropertyMeta(RDFS_ClassMeta):
 
     """
     def __new__(cls, name, parents, dct):
-        dct.setdefault("__domain__", None)
-        dct.setdefault("__range__", None)
+        dct.setdefault("domain", PropertyProxy(name="domain"))
+        dct.setdefault("range", PropertyProxy(name="range"))
 
         return super(RDFS_PropertyMeta, cls).__new__(cls, name, parents, dct)
 
@@ -74,7 +74,5 @@ class RDFS_Property(with_metaclass(RDFS_PropertyMeta, RDFS_Class)):
 
     """
 
-    def __init__(self, domain=None, range=None, *args, **kwargs):
-        self.domain = domain
-        self.range = range
+    def __init__(self, *args, **kwargs):
         super(RDFS_Property, self).__init__(*args, **kwargs)

@@ -6,10 +6,11 @@ from hamcrest import (
     calling,
     contains_inanyorder,
     equal_to,
+    has_length,
     is_,
     raises,
 )
-from rdflib import Literal
+from rdflib import Literal, RDFS
 
 from ontology_alchemy.tests.fixtures import create_ontology
 
@@ -110,3 +111,11 @@ def test_nonexistant_property_language_tag_returns_none():
     instance = ontology.Organization(label="Acme Inc.")
 
     assert_that(instance.label(lang="foo"), is_(equal_to(None)))
+
+
+def test_instance_rdf_statements_are_valid():
+    ontology = create_ontology()
+    instance = ontology.Organization(label="Acme Inc.")
+
+    statements = list(instance.iter_rdf_statements())
+    assert_that(statements, has_length(1))

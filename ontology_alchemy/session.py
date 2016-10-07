@@ -56,6 +56,17 @@ class Session(object):
         """
         self.instances.append(instance)
 
+    def rdf_statements(self):
+        """
+        Return iterable over (subject, predicate, object) statements
+        representing all instances created since session started.
+
+        """
+        return chain.from_iterable(
+            instance.rdf_statements()
+            for instance in self.instances
+        )
+
 
 @contextmanager
 def session_context():

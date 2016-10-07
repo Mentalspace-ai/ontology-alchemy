@@ -13,15 +13,17 @@ class PropertyProxy(object):
 
     """
 
-    def __init__(self, name=None, values=None, domain=None, range=None):
+    def __init__(self, name=None, uri=None, values=None, domain=None, range=None):
         self.name = name
+        self.uri = uri
         self.values = values or []
         self.domain = domain or []
         self.range = range or []
 
     def __str__(self):
-        return "<PropertyProxy name={}, domain={}, range={}, values={}>".format(
+        return "<PropertyProxy name={}, uri={}, domain={}, range={}, values={}>".format(
             self.name,
+            self.uri,
             self.domain,
             self.range,
             self.values,
@@ -45,6 +47,7 @@ class PropertyProxy(object):
     def for_(cls, property_cls):
         return PropertyProxy(
             name=property_cls.__name__,
+            uri=property_cls.__uri__,
             domain=property_cls.domain,
             range=property_cls.inferred_range(),
         )

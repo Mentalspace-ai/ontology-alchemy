@@ -1,10 +1,21 @@
 """Base classes used in constructing ontologies."""
 from itertools import chain
+from random import choice
+from string import ascii_lowercase, ascii_uppercase, digits
 
+from rdflib.namespace import RDF, RDFS
 from six import with_metaclass
 
 from ontology_alchemy.proxy import LiteralPropertyProxy, PropertyProxy
 from ontology_alchemy.session import Session
+
+
+def generate_uri(base_uri, random_length=8):
+    random_id = "".join(
+        choice(ascii_uppercase + ascii_lowercase + digits)
+        for _ in range(random_length)
+    )
+    return "{}_{}".format(base_uri, random_id)
 
 
 class RDFS_ClassMeta(type):
@@ -23,11 +34,11 @@ class RDFS_ClassMeta(type):
 
     def __init__(cls, name, bases, dct):
         # Define proxies for the core RDFS properties as defined in the RDF Schema specification
-        cls.label = LiteralPropertyProxy(name="label")
-        cls.comment = LiteralPropertyProxy(name="comment")
-        cls.seeAlso = PropertyProxy(name="seeAlso")
-        cls.isDefinedBy = PropertyProxy(name="isDefinedBy")
-        cls.value = PropertyProxy(name="value")
+        cls.label = LiteralPropertyProxy(name="label", uri=RDFS.label)
+        cls.comment = LiteralPropertyProxy(name="comment", uri=RDFS.comment)
+        cls.seeAlso = PropertyProxy(name="seeAlso", uri=RDFS.seeAlso)
+        cls.isDefinedBy = PropertyProxy(name="isDefinedBy", uri=RDFS.isDefinedBy)
+        cls.value = PropertyProxy(name="value", uri=RDF.value)
 
         Session.get_current().register_class(cls)
         return super(RDFS_ClassMeta, cls).__init__(name, bases, dct)
@@ -43,8 +54,8 @@ class RDFS_PropertyMeta(RDFS_ClassMeta):
     """
     def __init__(cls, name, bases, dct):
         # Define proxies for the core RDFS properties as defined in the RDF Schema specification
-        cls.domain = PropertyProxy(name="domain")
-        cls.range = PropertyProxy(name="range")
+        cls.domain = PropertyProxy(name="domain", uri=RDFS.domain)
+        cls.range = PropertyProxy(name="range", uri=RDFS.range)
 
         return super(RDFS_PropertyMeta, cls).__init__(name, bases, dct)
 
@@ -56,13 +67,14 @@ class RDFS_Class(with_metaclass(RDFS_ClassMeta)):
 
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, uri=None, **kwargs):
         # Define proxies for the core RDFS properties as defined in the RDF Schema specification
-        self.label = LiteralPropertyProxy(name="label")
-        self.comment = LiteralPropertyProxy(name="comment")
-        self.seeAlso = PropertyProxy(name="seeAlso")
-        self.isDefinedBy = PropertyProxy(name="isDefinedBy")
-        self.value = PropertyProxy(name="value")
+        self.label = LiteralPropertyProxy(name="label", uri=RDFS.label)
+        self.comment = LiteralPropertyProxy(name="comment", uri=RDFS.comment)
+        self.seeAlso = PropertyProxy(name="seeAlso", uri=RDFS.seeAlso)
+        self.isDefinedBy = PropertyProxy(name="isDefinedBy", uri=RDFS.isDefinedBy)
+        self.value = PropertyProxy(name="value", uri=RDF.value)
+        self.uri = uri or generate_uri(self.__class__.__uri__)
 
         for property_class in self.__class__.__properties__:
             setattr(self, property_class.__name__, PropertyProxy.for_(property_class))
@@ -72,6 +84,19 @@ class RDFS_Class(with_metaclass(RDFS_ClassMeta)):
             property_proxy += v
 
         Session.get_current().register_instance(self)
+
+    def iter_rdf_statements(self):
+        """
+        Returns an iterable over (subject, predicate, object) triples
+        representing all of the relations and assigments represented in the class instance.
+
+        """
+        for value in self.__dict__.values():
+            if isinstance(value, PropertyProxy):
+                property_name = value.name
+                property_uri = value.uri
+                for property_value in getattr(self, property_name):
+                    yield (self.uri, property_uri , property_value)
 
 
 class RDFS_Property(with_metaclass(RDFS_PropertyMeta, RDFS_Class)):

@@ -1,16 +1,11 @@
 """Unit-tests for the core ontology module."""
-from unittest import skip
-
 from hamcrest import (
     assert_that,
-    calling,
     contains_inanyorder,
     equal_to,
     instance_of,
     is_,
-    raises,
 )
-from rdflib import Literal
 from six import string_types, text_type
 
 from ontology_alchemy.base import RDFS_Class, RDFS_Property

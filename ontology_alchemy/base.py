@@ -1,10 +1,6 @@
 """Base classes used in constructing ontologies."""
-from collections import defaultdict
+from six import with_metaclass
 
-from rdflib import Literal
-from six import string_types, text_type, with_metaclass
-
-from ontology_alchemy.constants import DEFAULT_LANGUAGE_TAG
 from ontology_alchemy.proxy import LiteralPropertyProxy, PropertyProxy
 from ontology_alchemy.session import Session
 

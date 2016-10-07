@@ -61,8 +61,8 @@ united_states.officialLanguage += us_dollar
 **Inheritance** works as expected. All sub-classes of a given class will inherit it's properties:
 
 ```python
-# Actor is a hypothetical type that is defined a a rdfs:subClassOf Person,
-# which in turn defines a 'marriedTo' property.
+# Actor is a hypothetical type that is defined as a rdfs:subClassOf Person,
+# which in turn defines a 'marriedTo' property
 brad = ontology.Actor(label="Brad Pitt")
 angelina = ontology.Actor(label="Angelina Jolie")
 

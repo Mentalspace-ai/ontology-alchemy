@@ -102,7 +102,6 @@ class OntologyBuilder(object):
         self.namespace[class_name].__doc__ = comment
         self.namespace[class_name].comment += Literal(comment, lang=lang)
 
-
     def add_label(self, class_uri, label, lang=DEFAULT_LANGUAGE_TAG):
         class_name = self._extract_name(class_uri)
         self.namespace[class_name].label += Literal(label, lang=lang)

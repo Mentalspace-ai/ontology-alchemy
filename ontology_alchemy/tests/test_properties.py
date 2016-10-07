@@ -6,13 +6,11 @@ from hamcrest import (
     calling,
     contains_inanyorder,
     equal_to,
-    instance_of,
     is_,
     raises,
 )
 from rdflib import Literal
 
-from ontology_alchemy.constants import DEFAULT_LANGUAGE_TAG
 from ontology_alchemy.tests.fixtures import create_ontology
 
 

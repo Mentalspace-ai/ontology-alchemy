@@ -84,6 +84,28 @@ class RDFS_Property(with_metaclass(RDFS_PropertyMeta, RDFS_Class)):
     def __init__(self, *args, **kwargs):
         super(RDFS_Property, self).__init__(*args, **kwargs)
 
+    def __str__(self):
+        return "<RDFS_Property label={}, domain={}, range={}>".format(
+            self.label,
+            self.domain,
+            self.range,
+        )
+
+    @classmethod
+    def inferred_domain(cls):
+        """
+        Calculate the full domain for this property class based on traversing up the full
+        property inheritance hierarchy.
+
+        """
+        return cls.domain.values + list(
+            chain.from_iterable(
+                base_class.inferred_domain()
+                for base_class in cls.__bases__
+                if getattr(base_class, 'domain', None)
+            )
+        )
+
     @classmethod
     def inferred_range(cls):
         """
@@ -91,11 +113,10 @@ class RDFS_Property(with_metaclass(RDFS_PropertyMeta, RDFS_Class)):
         property inheritance hierarchy.
 
         """
-        inferred_range = cls.range.values + list(
+        return cls.range.values + list(
             chain.from_iterable(
                 base_class.inferred_range()
                 for base_class in cls.__bases__
                 if getattr(base_class, 'range', None)
             )
         )
-        return inferred_range

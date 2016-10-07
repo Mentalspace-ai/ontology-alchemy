@@ -10,7 +10,7 @@ This project aims to make it easy to work programmatically with RDF Ontologies. 
 
 Some of the main tasks made possible with this library include:
 
-* Loading an existing, serialized RDF Ontology (e.g from a Turtle/N3 formatted file) into Python code, allowing introspection of the ontology. This is done via [rdflib](http://rdflib.readthedocs.io/en/stable/)
+* Loading an existing, serialized RDF Ontology (e.g from a Turtle/N3 formatted file) into Python code, allowing introspection of the ontology. The parsing heavy-lifting is done via [rdflib](http://rdflib.readthedocs.io/en/stable/), and the parsed RDF Graph is then further processed to dynamically build a Python class hierarchy.
 * Creating Pythonic class instances using the types defined in the ontology, including properties and relations, as well as native data types
 * Validation on property value types based on ontology definitions
 * Easy interfacing to persistence layer by a Session abstraction which exposes all instances created in an easy-to-use way

@@ -58,15 +58,22 @@ print(china.officialLanguage(mandarin))  # Will evaluate to true
 united_states.officialLanguage += us_dollar
 ```
 
-**Inheritance** works as expected. All sub-classes of a given class will inherit it's properties:
+**Inheritance** works as expected. All sub-classes of a given class (defined via the rdfs:subClassOf predicate)
+will inherit it's properties. In addition, rdfs:subPropertyOf relations are properly supported:
+
 
 ```python
-# Actor is a hypothetical type that is defined as a rdfs:subClassOf Person,
-# which in turn defines a 'marriedTo' property
+# Actor is a rdfs:subClassOf of Person
 brad = ontology.Actor(label="Brad Pitt")
 angelina = ontology.Actor(label="Angelina Jolie")
 
+# Person defines rdf:Property 'marriedTo' so it can be used by Actor as well
 brad.marriedTo += angelina
+
+# Assuming 'marriedTo' as defined with rdf:subPropertyOf relation to a hypothetical
+# 'livesWith' rdfs:Property defines on Person the following will evaluate to true
+brad.livesWith(angelina)
+
 ```
 
 Interfacing with a persistent backend is easy by leveraging the `Session` interface

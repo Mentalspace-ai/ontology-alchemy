@@ -186,7 +186,7 @@ class OntologyBuilder(object):
         for klass in self.namespace.values():
             if issubclass(klass, RDFS_Property):
                 for property_class in set([klass] + klass.__subclasses__()) - visited:
-                    print("_build_property_proxies() - property_class: ", property_class)
+                    self.logger.debug("_build_property_proxies() - propagating property_class: %s", property_class)
                     # XXX - We assume each sub-property inherits it's domain from it's parent.
                     # This can be fixed by evaluating each sub-property's __bases__ to re-construct
                     # full domain expression.

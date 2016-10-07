@@ -19,13 +19,22 @@ class PropertyProxy(object):
         self.domain = domain or []
         self.range = range or []
 
+    def __str__(self):
+        return "<PropertyProxy name={}, domain={}, range={}, values={}>".format(
+            self.name,
+            self.domain,
+            self.range,
+            self.values,
+        )
+
     def __call__(self, value=None):
         return value in self.values
 
     def __iadd__(self, value):
         if not self.is_valid(value):
-            raise ValueError("Invalid assigment. property value must be one of types {}, but got: {}"
-                             .format(str(self.range), value))
+            raise ValueError("{}({}): Invalid assigment. property value must be one of range={}, but got: {}"
+                             .format(self.__class__.__name__, self.name, self.range, value))
+
 
         self.add_instance(value)
         return self
@@ -38,7 +47,7 @@ class PropertyProxy(object):
         return PropertyProxy(
             name=property_cls.__name__,
             domain=property_cls.domain,
-            range=property_cls.range
+            range=property_cls.inferred_range(),
         )
 
     def add_instance(self, value):

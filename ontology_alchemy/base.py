@@ -1,4 +1,6 @@
 """Base classes used in constructing ontologies."""
+from itertools import chain
+
 from six import with_metaclass
 
 from ontology_alchemy.proxy import LiteralPropertyProxy, PropertyProxy
@@ -76,3 +78,19 @@ class RDFS_Property(with_metaclass(RDFS_PropertyMeta, RDFS_Class)):
 
     def __init__(self, *args, **kwargs):
         super(RDFS_Property, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def inferred_range(cls):
+        """
+        Calculate the full range for this property class based on traversing up the full
+        property inheritance hierarchy.
+
+        """
+        inferred_range = cls.range.values + list(
+            chain.from_iterable(
+                base_class.inferred_range()
+                for base_class in cls.__bases__
+                if getattr(base_class, 'range', None)
+            )
+        )
+        return inferred_range

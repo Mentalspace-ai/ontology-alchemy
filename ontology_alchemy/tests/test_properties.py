@@ -63,6 +63,20 @@ def test_valid_property_assigment_for_a_subclass_instance_work():
     assert_that(domain_instance.hasEmployee(range_instance), is_(True))
 
 
+def test_valid_sub_property_assigment_for_a_subclass_instance_work():
+    ontology = create_ontology()
+    domain_instance = ontology.GovernmentOrganization(
+        label="Acme Inc.",
+    )
+    range_instance = ontology.Person(
+        label="John Doe",
+    )
+    domain_instance.hasExecutive += range_instance
+
+    assert_that(domain_instance.hasExecutive(range_instance), is_(True))
+    # assert_that(domain_instance.hasEmployee(range_instance), is_(True))
+
+
 @skip("TODO")
 def test_direct_assigment_for_a_class_instance_property_raises_value_error():
     ontology = create_ontology()

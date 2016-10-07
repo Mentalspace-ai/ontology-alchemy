@@ -23,9 +23,13 @@ def test_core_rdfs_properties_for_a_class_instance_constructor_work():
         label=label,
         comment=comment
     )
+    # rdf:value can take on arbitrary rdf:Resource assigments, including literals (primitive type)
+    value = 156.4
+    instance.value += value
 
     assert_that(instance.label(lang="en"), contains_inanyorder(label))
     assert_that(instance.comment(lang="es"), contains_inanyorder(comment.value))
+    assert_that(instance.value, contains_inanyorder(value))
 
 
 def test_invalid_properties_for_a_class_instance_constructor_raise_attribute_error():

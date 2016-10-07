@@ -14,10 +14,7 @@ class Ontology(object):
         described by the ontology.
 
         """
-        self.namespace = namespace
-
-    def __getattr__(self, name):
-        return self.namespace[name]
+        self.__dict__.update(namespace)
 
     @classmethod
     def load(cls, file_or_filename, format=None):

@@ -15,7 +15,7 @@ class PropertyProxy(object):
         self.domain = domain
         self.range = range
 
-    def __call__(self, value):
+    def __call__(self, value=None, lang=None):
         return value in self.values
 
     def __iadd__(self, value):

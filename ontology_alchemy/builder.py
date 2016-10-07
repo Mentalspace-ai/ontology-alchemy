@@ -130,6 +130,8 @@ class OntologyBuilder(object):
             parsed_url = urlparse(s)
             if parsed_url.fragment:
                 return "{}#".format(urldefrag(s)[0])
+            else:
+                return "{}/".format(s.rsplit('/', 1)[0])
 
     def _resolve_range(self, range_uri):
         """

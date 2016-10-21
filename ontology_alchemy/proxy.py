@@ -45,7 +45,11 @@ class PropertyProxy(object):
 
     @classmethod
     def for_(cls, property_cls):
-        return PropertyProxy(
+        if property_cls.range == [Literal]:
+            # For literal-valued properties
+            cls = LiteralPropertyProxy
+
+        return cls(
             name=property_cls.__name__,
             uri=property_cls.__uri__,
             domain=property_cls.domain,

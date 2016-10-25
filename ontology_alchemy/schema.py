@@ -7,7 +7,7 @@ Some of the primary mappings of interest include:
 * the rdfs:subClassOf property type which should be mapped to an inheritance relation
 
 """
-from rdflib import RDF, RDFS, OWL, Literal
+from rdflib import RDF, RDFS, OWL, XSD, Literal
 from six import string_types
 
 
@@ -25,9 +25,8 @@ def is_a_property(uri):
 
 
 def is_a_literal(uri):
-    return uri in (
-        RDFS.Literal,
-    )
+    return (uri in (RDFS.Literal,) or
+            uri.startswith(XSD))
 
 
 def is_literal_value(value):

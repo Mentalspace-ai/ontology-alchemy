@@ -62,8 +62,6 @@ class OntologyBuilder(object):
         self._build_class_hierarchy()
         self._build_property_proxies()
 
-        self.namespace["__uri__"] = self.base_uri
-
         return self.namespace
 
     def add_class(self, class_uri, base_class_uris=None, is_property=False):
@@ -114,7 +112,7 @@ class OntologyBuilder(object):
 
         The simple heuristic employed is to URL-parse the subject of the first
         encountered triple with RDF.type as its predicate in the RDF graph and
-        extract it's last path component.
+        extract its last path component.
 
         :param graph - `rdflib.Graph` instance populated with ontology
         :returns {str} the inferred base URI

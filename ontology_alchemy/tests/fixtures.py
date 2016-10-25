@@ -9,6 +9,7 @@ RDFS_TURTLE_ONTOLOGY = """
     @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
     @prefix exampleOntology: <http://example.com/namespace#> .
 
     exampleOntology:Thing a rdfs:Class;
@@ -45,6 +46,13 @@ RDFS_TURTLE_ONTOLOGY = """
         rdfs:domain exampleOntology:Organization;
         rdfs:range rdfs:Literal;
         rdfs:comment "The North American Industry Classification System (NAICS) code."
+        .
+    exampleOntology:numberOfEmployees a rdf:Property;
+        rdfs:label "numberOfEmployees"@en;
+        rdfs:domain exampleOntology:Organization;
+        rdfs:range xsd:integer;
+        rdfs:comment "The number of employees an organization employs.";
+        skos:exactMatch <http://schema.org/numberOfEmployees>
         .
     exampleOntology:hasEmployee a rdf:Property;
         rdfs:label "hasEmployee"@en;

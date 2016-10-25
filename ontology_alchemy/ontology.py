@@ -7,7 +7,7 @@ from ontology_alchemy.builder import OntologyBuilder
 
 class Ontology(object):
 
-    def __init__(self, namespace, **kwargs):
+    def __init__(self, namespace, base_uri=None, **kwargs):
         """
         Initialize an ontology given a namespace.
         A namespace encapsulates the full hierarchy of types and inheritance relations
@@ -15,6 +15,8 @@ class Ontology(object):
 
         """
         self.__dict__.update(namespace)
+        self.__terms__ = list(namespace.keys())
+        self.__uri__ = base_uri
 
     @classmethod
     def load(cls, file_or_filename, format=None):
@@ -43,6 +45,7 @@ class Ontology(object):
                 raise RuntimeError("Must supply format argument when not loading from a filename")
             graph.parse(file_or_filename, format=format)
 
-        namespace = OntologyBuilder(graph).build_namespace()
+        builder = OntologyBuilder(graph)
+        namespace = builder.build_namespace()
 
-        return cls(namespace)
+        return cls(namespace, base_uri=builder.base_uri)

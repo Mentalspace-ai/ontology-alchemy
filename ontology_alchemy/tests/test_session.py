@@ -21,6 +21,7 @@ def assert_session_matches_expected(session, ontology):
         ontology.hasEmployee,
         ontology.hasExecutive,
         ontology.naics,
+        ontology.numberOfEmployees,
     ))
 
 

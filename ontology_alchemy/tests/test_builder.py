@@ -5,8 +5,9 @@ from hamcrest import (
     equal_to,
     instance_of,
     is_,
+    only_contains,
 )
-from six import string_types, text_type
+from six import StringIO, string_types, text_type
 
 from ontology_alchemy.base import RDFS_Class, RDFS_Property
 from ontology_alchemy.ontology import Ontology
@@ -17,6 +18,25 @@ def test_loading_from_file_stream_works():
     ontology = Ontology.load(create_ontology_file_object(), format="turtle")
 
     assert_that(ontology, is_(instance_of(Ontology)))
+
+
+def test_terms_enumeration_is_valid():
+    ontology = Ontology.load(StringIO("""
+        @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+        @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+        @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+        @prefix exampleOntology: <http://example.com/namespace#> .
+
+        exampleOntology:Person a rdfs:Class ;
+            rdfs:label "Person"@en .
+
+        exampleOntology:age a rdf:Property ;
+            rdfs:label "age"@en ;
+            rdfs:domain exampleOntology:Person ;
+            rdfs:range xsd:integer .
+        """), format="turtle")
+
+    assert_that(ontology.__terms__, only_contains("Person", "age"))
 
 
 def test_rdfs_class_hierarchy_is_valid():

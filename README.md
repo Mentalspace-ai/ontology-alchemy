@@ -9,7 +9,7 @@ ontology-alchemy makes using [RDF](https://en.wikipedia.org/wiki/Resource_Descri
 This project aims to make it easy to work programmatically with RDF Ontologies. RDF Ontologies are prelevant in the world of [Semantic Web](https://en.wikipedia.org/wiki/Semantic_Web). Notable projects using these include [schema.org](http://schema.org), which includes a general ontology that can be used by websites to describe their contents, and [DBPedia](http://wiki.dbpedia.org) which maintains a curated, multi-lingual structured knowledge graph based on Wikipedia.
 
 While the RDF Schema ([RDFS](https://www.w3.org/TR/rdf-schema/)) data model is a similar paradigm in many respects to that of Object Oriented Programming (OOP), mapping from RDF ontologies to programmatic objects is not straight forward - in RDF, the emphasis is on the predicates (which can be thought of as graph edges, or object properties), and a given object can be tied to arbitrary properties; moreover, multiple assigments of a given predicate type can be tied to an object - e.g we can assert multiple rdfs:label associations for any given subject (instance). Further, validation of property assigment (e.g rdf:Property domain and range) is not strictly enforced in the original RDF/RDFS specifications and is left as an application-specific decision.
-To bridge some of these differences, this framework sets forth a few opinionated conventions for translating RDF/RDFS conventions to Pythonic OOP-style code.
+To bridge some of these differences, this framework sets forth a few opinionated conventions for translating RDF/RDFS definitions to Pythonic OOP-style code.
 
 Some of the main tasks made possible with this library include:
 

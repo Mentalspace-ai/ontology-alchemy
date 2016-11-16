@@ -7,7 +7,7 @@ from ontology_alchemy.builder import OntologyBuilder
 
 class Ontology(object):
 
-    def __init__(self, namespace, base_uri=None, **kwargs):
+    def __init__(self, namespace, graph, base_uri=None, **kwargs):
         """
         Initialize an ontology given a namespace.
         A namespace encapsulates the full hierarchy of types and inheritance relations
@@ -15,6 +15,7 @@ class Ontology(object):
 
         """
         self.__dict__.update(namespace)
+        self.__graph__ = graph
         self.__terms__ = list(namespace.keys())
         self.__uri__ = base_uri
 
@@ -48,4 +49,11 @@ class Ontology(object):
         builder = OntologyBuilder(graph)
         namespace = builder.build_namespace()
 
-        return cls(namespace, base_uri=builder.base_uri)
+        return cls(namespace, graph=graph, base_uri=builder.base_uri)
+
+    def rdf_statements(self):
+        """
+        Return a generator expression iterating over all RDF statements encompassed in the ontology graph.
+
+        """
+        return self.__graph__.triples((None, None, None))

@@ -36,7 +36,10 @@ def test_terms_enumeration_is_valid():
             rdfs:range xsd:integer .
         """), format="turtle")
 
-    assert_that(ontology.__terms__, only_contains("Person", "age"))
+    assert_that(ontology.__terms__, only_contains(
+        "Person",
+        "age",
+    ))
 
 
 def test_rdfs_class_hierarchy_is_valid():

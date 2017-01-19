@@ -1,7 +1,7 @@
 from collections import defaultdict
 from logging import getLogger
 
-from rdflib import Literal, RDF
+from rdflib import Literal, RDF, RDFS
 from six.moves.urllib.parse import urldefrag, urlparse
 from toposort import toposort
 
@@ -38,7 +38,9 @@ class OntologyBuilder(object):
         self.namespace = {}
         self.logger = getLogger(__name__)
 
-        self._type_graph = {}
+        self._type_graph = {
+            RDFS.Class: RDFS.Class,
+        }
         self._sub_class_graph = defaultdict(set)
         self._asserted_statements = set()
 
@@ -150,7 +152,10 @@ class OntologyBuilder(object):
 
         """
         for uri in self._type_graph:
-            if uri not in self._sub_class_graph:
+            if all((
+                uri not in self._sub_class_graph,
+                uri not in (RDFS.Class,)
+            )):
                 # Make sure all types are represented in the sub class graph by adding self links.
                 self._sub_class_graph[uri].add(uri)
 

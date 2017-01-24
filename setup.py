@@ -2,7 +2,7 @@
 from setuptools import find_packages, setup
 
 project = "ontology-alchemy"
-version = "0.1.2"
+version = "0.1.3"
 
 setup(
     name=project,
@@ -29,6 +29,7 @@ setup(
     tests_require=[
         "coverage>=3.7.1",
         "mock>=1.0.1",
+        "nose-parameterized>=0.5.0",
         "PyHamcrest>=1.8.5",
     ],
 )

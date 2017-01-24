@@ -2,14 +2,18 @@
 from hamcrest import (
     assert_that,
     contains_inanyorder,
+    empty,
     equal_to,
     instance_of,
     is_,
+    is_not,
     only_contains,
 )
+from nose.plugins.attrib import attr
+from nose_parameterized import parameterized
 from six import StringIO, string_types, text_type
 
-from ontology_alchemy.base import RDFS_Class, RDFS_Property
+from ontology_alchemy.base import RDFS_Class, RDF_Property
 from ontology_alchemy.ontology import Ontology
 from ontology_alchemy.tests.fixtures import create_ontology_file_object, create_ontology
 
@@ -71,7 +75,7 @@ def test_rdfs_class_hierarchy_is_valid():
     assert_that(ontology.naics, is_(instance_of(type)))
     assert_that(ontology.naics.__name__, is_("naics"))
     assert_that(ontology.naics.__bases__, contains_inanyorder(
-        RDFS_Property,
+        RDF_Property,
     ))
     assert_that(ontology.naics.__uri__, is_(instance_of(string_types)))
     assert_that(ontology.naics.label(lang="en"), contains_inanyorder(
@@ -80,3 +84,18 @@ def test_rdfs_class_hierarchy_is_valid():
     assert_that(ontology.naics.domain, contains_inanyorder(
         ontology.Organization,
     ))
+
+
+@attr("requires_internet_connection")
+@parameterized([
+    "http://www.w3.org/TR/skos-reference/skos.rdf",  # SKOS
+    "https://www.w3.org/2002/07/owl",  # OWL 2
+])
+def test_can_load_established_ontologies(ontology_uri):
+    """
+    Test that we can load some commonly used ontologies.
+
+    """
+    ontology = Ontology.load(ontology_uri)
+
+    assert_that(ontology.__terms__, is_not(empty()))

@@ -44,9 +44,9 @@ class RDFS_ClassMeta(type):
         return super(RDFS_ClassMeta, cls).__init__(name, bases, dct)
 
 
-class RDFS_PropertyMeta(RDFS_ClassMeta):
+class RDF_PropertyMeta(RDFS_ClassMeta):
     """
-    Metaclass for the `RDFS_Property` class.
+    Metaclass for the `RDF_Property` class.
 
     This metaclass governs the creation of all property classes which correspond
     to an RDFS.Property resource.
@@ -57,7 +57,7 @@ class RDFS_PropertyMeta(RDFS_ClassMeta):
         cls.domain = PropertyProxy(name="domain", uri=RDFS.domain)
         cls.range = PropertyProxy(name="range", uri=RDFS.range)
 
-        return super(RDFS_PropertyMeta, cls).__init__(name, bases, dct)
+        return super(RDF_PropertyMeta, cls).__init__(name, bases, dct)
 
 
 class RDFS_Class(with_metaclass(RDFS_ClassMeta)):
@@ -99,7 +99,7 @@ class RDFS_Class(with_metaclass(RDFS_ClassMeta)):
                     yield (self.uri, property_uri, property_value)
 
 
-class RDFS_Property(with_metaclass(RDFS_PropertyMeta, RDFS_Class)):
+class RDF_Property(with_metaclass(RDF_PropertyMeta, RDFS_Class)):
     """
     Base class for all dynamically-generated ontology property classes
     corresponding to the RDFS.Property resource.
@@ -107,10 +107,10 @@ class RDFS_Property(with_metaclass(RDFS_PropertyMeta, RDFS_Class)):
     """
 
     def __init__(self, *args, **kwargs):
-        super(RDFS_Property, self).__init__(*args, **kwargs)
+        super(RDF_Property, self).__init__(*args, **kwargs)
 
     def __str__(self):
-        return "<RDFS_Property label={}, domain={}, range={}>".format(
+        return "<RDF_Property label={}, domain={}, range={}>".format(
             self.label,
             self.domain,
             self.range,

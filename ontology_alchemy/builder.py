@@ -1,22 +1,37 @@
-from collections import defaultdict
+from collections import Counter, defaultdict
+from itertools import islice
 from logging import getLogger
+from random import sample
 
 from rdflib import Literal, RDF, RDFS
 from six.moves.urllib.parse import urldefrag, urlparse
 from toposort import toposort
 
-from ontology_alchemy.base import RDFS_Class, RDFS_Property
+from ontology_alchemy.base import RDFS_Class, RDF_Property
 from ontology_alchemy.constants import DEFAULT_LANGUAGE_TAG
 from ontology_alchemy.schema import (
+    in_namespace,
     is_a_property,
+    is_a_property_subtype,
+    is_a_list,
     is_a_literal,
     is_comment_predicate,
     is_domain_predicate,
     is_label_predicate,
     is_range_predicate,
     is_sub_class_predicate,
+    is_sub_property_predicate,
     is_type_predicate,
+    looks_like_a_property_uri,
 )
+
+
+def get_base_uri(uri):
+    parsed = urlparse(uri)
+    if parsed.fragment:
+        return "{}#".format(urldefrag(uri)[0])
+
+    return "{}/".format(uri.rsplit('/', 1)[0])
 
 
 class OntologyBuilder(object):
@@ -40,6 +55,7 @@ class OntologyBuilder(object):
 
         self._type_graph = {
             RDFS.Class: RDFS.Class,
+            RDF.Property: RDFS.Class,
         }
         self._sub_class_graph = defaultdict(set)
         self._asserted_statements = set()
@@ -58,6 +74,10 @@ class OntologyBuilder(object):
                 self._type_graph[s] = o
             elif is_sub_class_predicate(p):
                 self._sub_class_graph[s].add(o)
+            elif is_sub_property_predicate(p):
+                self._sub_class_graph[s].add(o)
+                # TODO: We're cheating a bit by asserting the type of any sub-property is simply rdfs:Property
+                # self._type_graph[s] = RDF.Property
             else:
                 self._asserted_statements.add((s, p, o))
 
@@ -66,30 +86,17 @@ class OntologyBuilder(object):
 
         return self.namespace
 
-    def add_class(self, class_uri, base_class_uris=None, is_property=False):
-        class_name = self._extract_name(class_uri)
-
-        base_classes = (RDFS_Property,) if is_property else (RDFS_Class,)
-        if base_class_uris:
-            base_classes = tuple(
-                self.namespace[self._extract_name(base_class_uri)]
-                for base_class_uri in base_class_uris
-            )
-
-        self.namespace[class_name] = type(
-            class_name,
-            base_classes,
-            {"__uri__": class_uri}
-        )
-        self.logger.debug("_add_class() - Added class: %s", class_name)
-
     def add_property_domain(self, property_uri, domain_uri):
         property_name = self._extract_name(property_uri)
-        domain_name = self._extract_name(domain_uri)
-        domain_class = self.namespace[domain_name]
+        domain_class = self._resolve_domain(domain_uri)
         self.namespace[property_name].domain += domain_class
 
     def add_property_range(self, property_uri, range_uri):
+        self.logger.debug(
+            "add_property_range() - adding range uri %s for property %s",
+            range_uri,
+            property_uri,
+        )
         property_name = self._extract_name(property_uri)
         range_class = self._resolve_range(range_uri)
         self.namespace[property_name].range += range_class
@@ -112,33 +119,64 @@ class OntologyBuilder(object):
         Attempt to infer automatically the base URI for the given ontology
         by looking at definitions.
 
-        The simple heuristic employed is to URL-parse the subject of the first
-        encountered triple with RDF.type as its predicate in the RDF graph and
+        The simple heuristic employed is to URL-parse the most common subject
+        base URI appearing in the first few hundred triples with RDF.type as its predicate in the RDF graph and
         extract its last path component.
 
         :param graph - `rdflib.Graph` instance populated with ontology
         :returns {str} the inferred base URI
 
         """
-        for s, p, o in graph.triples((None, RDF.type, None)):
-            parsed_url = urlparse(s)
-            if parsed_url.fragment:
-                return "{}#".format(urldefrag(s)[0])
-            else:
-                return "{}/".format(s.rsplit('/', 1)[0])
+        triples_subset = list(islice(
+            (get_base_uri(s)
+             for (s, p, o)
+             in graph.triples((None, RDF.type, None))),
+            200
+        ))
+        random_sample = sample(
+            triples_subset,
+            k=min(30, len(triples_subset)),
+        )
+        return Counter(random_sample).most_common(1)[0][0]
+
+    def _resolve_domain(self, domain_uri):
+        """
+        Resolve a rdfs.Property rdfs.domain value to a type.
+
+        """
+        domain_name = self._extract_name(domain_uri)
+        if domain_name in self.namespace:
+            return self.namespace[domain_name]
+        elif is_a_property(domain_uri):
+            return RDF_Property
+
+        return RDFS_Class
 
     def _resolve_range(self, range_uri):
         """
         Resolve a rdfs.Property rdfs.range value to a type.
 
         """
+        range_name = self._extract_name(range_uri)
+        if range_name in self.namespace:
+            return self.namespace[range_name]
         if is_a_literal(range_uri):
             return Literal
+        elif is_a_property(range_uri):
+            return RDF_Property
+        elif is_a_list(range_uri):
+            return RDF.List
 
-        range_name = self._extract_name(range_uri)
-        range_class = self.namespace[range_name]
+        return RDFS_Class
 
-        return range_class
+    def _resolve_base_class(self, base_class_uri):
+        base_class_name = self._extract_name(base_class_uri)
+        if base_class_name in self.namespace:
+            return self.namespace[base_class_name]
+        elif looks_like_a_property_uri(base_class_uri):
+            return RDF_Property
+
+        return RDFS_Class
 
     def _build_class_hierarchy(self):
         """
@@ -154,15 +192,25 @@ class OntologyBuilder(object):
         for uri in self._type_graph:
             if all((
                 uri not in self._sub_class_graph,
-                uri not in (RDFS.Class,)
+                uri not in (RDFS.Class, RDF.Property)
             )):
                 # Make sure all types are represented in the sub class graph by adding self links.
                 self._sub_class_graph[uri].add(uri)
 
         for classes in toposort(self._sub_class_graph):
             for class_uri in classes:
-                is_property = is_a_property(self._type_graph[class_uri])
-                self.add_class(
+                if not in_namespace(class_uri, base_uri=self.base_uri):
+                    # Do not add types which are not explicitly part of our current ontology URI namespace.
+                    self.logger.debug(
+                        "_build_class_hierarchy() - class_uri: %s not based in base_uri: %s, skipping",
+                        class_uri,
+                        self.base_uri,
+                    )
+                    continue
+
+                is_property = is_a_property_subtype(class_uri, type_graph=self._type_graph)
+
+                self._add_type(
                     class_uri,
                     base_class_uris=self._sub_class_graph[class_uri],
                     is_property=is_property
@@ -178,6 +226,24 @@ class OntologyBuilder(object):
             elif is_range_predicate(p):
                 self.add_property_range(s, o)
 
+    def _add_type(self, class_uri, base_class_uris=None, is_property=False):
+        class_name = self._extract_name(class_uri)
+
+        self.logger.debug("_add_type() - Adding type: %s", class_name)
+
+        base_classes = (RDF_Property,) if is_property else (RDFS_Class,)
+        if base_class_uris:
+            base_classes = tuple(
+                self._resolve_base_class(base_class_uri)
+                for base_class_uri in base_class_uris
+            )
+
+        self.namespace[class_name] = type(
+            class_name,
+            base_classes,
+            {"__uri__": class_uri}
+        )
+
     def _build_property_proxies(self):
         """
         Build `PropertyProxy` instances for all (Class, Property) pairs
@@ -187,7 +253,7 @@ class OntologyBuilder(object):
         visited = set()
 
         for klass in self.namespace.values():
-            if issubclass(klass, RDFS_Property):
+            if issubclass(klass, RDF_Property):
                 for property_class in set([klass] + klass.__subclasses__()) - visited:
                     self.logger.debug("_build_property_proxies() - propagating property_class: %s", property_class)
                     self._propagate_property(property_class, klass.inferred_domain())

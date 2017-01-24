@@ -1,5 +1,6 @@
 """Constant definitions used by the framework."""
 from rdflib import Literal
+from rdflib.namespace import RDF, OWL
 from six import string_types
 
 
@@ -13,4 +14,20 @@ LITERAL_PRIMITIVE_TYPES = string_types + (
     int,
     float,
     bool,
+)
+
+COMMON_PROPERTY_URIS = (
+    OWL.AnnotationProperty,
+    OWL.AsymmetricProperty,
+    OWL.DatatypeProperty,
+    OWL.DeprecatedProperty,
+    OWL.FunctionalProperty,
+    OWL.InverseFunctionalProperty,
+    OWL.IrreflexiveProperty,
+    OWL.ObjectProperty,
+    OWL.OntologyProperty,
+    OWL.ReflexiveProperty,
+    OWL.SymmetricProperty,
+    OWL.TransitiveProperty,
+    RDF.Property,
 )

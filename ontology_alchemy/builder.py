@@ -260,9 +260,9 @@ class OntologyBuilder(object):
                     visited.add(property_class)
 
     def _propagate_property(self, property_class, domain_classes):
-            for base_class in domain_classes:
-                self.logger.debug(
-                    "_propagate_property() - adding property %s to domain class: %s", property_class, base_class
-                )
-                base_class.__properties__.append(property_class)
-                self._propagate_property(property_class, base_class.__subclasses__())
+        for base_class in domain_classes:
+            self.logger.debug(
+                "_propagate_property() - adding property %s to domain class: %s", property_class, base_class
+            )
+            base_class.__properties__.append(property_class)
+            self._propagate_property(property_class, base_class.__subclasses__())

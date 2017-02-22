@@ -3,7 +3,7 @@ from itertools import chain
 from random import choice
 from string import ascii_lowercase, ascii_uppercase, digits
 
-from rdflib.namespace import RDF, RDFS
+from rdflib.namespace import RDF, RDFS, SKOS
 from six import with_metaclass
 
 from ontology_alchemy.proxy import LiteralPropertyProxy, PropertyProxy
@@ -39,6 +39,9 @@ class RDFS_ClassMeta(type):
         cls.seeAlso = PropertyProxy(name="seeAlso", uri=RDFS.seeAlso)
         cls.isDefinedBy = PropertyProxy(name="isDefinedBy", uri=RDFS.isDefinedBy)
         cls.value = PropertyProxy(name="value", uri=RDF.value)
+
+        # Define proxies for other common properties
+        cls.prefLabel = LiteralPropertyProxy(name="prefLabel", uri=SKOS.prefLabel)
 
         Session.get_current().register_class(cls)
         return super(RDFS_ClassMeta, cls).__init__(name, bases, dct)

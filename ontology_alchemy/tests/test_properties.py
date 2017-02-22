@@ -40,10 +40,19 @@ def test_primitive_type_assigment_for_property_proxy_works():
 def test_primitive_type_assigment_for_literal_property_proxy_works():
     ontology = create_ontology()
     instance = ontology.Organization()
-    label = 156.4
+    label = "label"
     instance.label += label
 
-    assert_that(instance.label, contains_inanyorder(label))
+    assert_that(instance.label, contains_inanyorder(Literal(label, lang="en")))
+
+
+def test_xsd_type_assigment_for_literal_property_proxy_works():
+    ontology = create_ontology()
+    instance = ontology.Country()
+    currency_code = "USD"
+    instance.currencyCode += currency_code
+
+    assert_that(instance.currencyCode, contains_inanyorder(Literal(currency_code, lang="en")))
 
 
 def test_invalid_properties_for_a_class_instance_constructor_raise_attribute_error():

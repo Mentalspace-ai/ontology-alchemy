@@ -18,6 +18,7 @@ def assert_session_matches_expected(session, ontology):
         ontology.GovernmentOrganization,
         ontology.Organization,
         ontology.Person,
+        ontology.currencyCode,
         ontology.hasEmployee,
         ontology.hasExecutive,
         ontology.naics,

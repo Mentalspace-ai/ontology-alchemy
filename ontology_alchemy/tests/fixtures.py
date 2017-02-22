@@ -41,6 +41,12 @@ RDFS_TURTLE_ONTOLOGY = """
         rdfs:label "Person"@en;
         rdfs:subClassOf exampleOntology:Thing;
         .
+    exampleOntology:currencyCode a rdf:Property;
+        rdfs:label "currencyCode"@en;
+        rdfs:domain exampleOntology:Country;
+        rdfs:range xsd:string;
+        rdfs:comment "Currency code of country's official currency.";
+        .
     exampleOntology:naics a rdf:Property;
         rdfs:label "naics"@en;
         rdfs:domain exampleOntology:Organization;

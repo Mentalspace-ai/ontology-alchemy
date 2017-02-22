@@ -45,8 +45,8 @@ class PropertyProxy(object):
 
     @classmethod
     def for_(cls, property_cls):
-        if property_cls.range == [Literal]:
-            # For literal-valued properties
+        if property_cls.range.values == [Literal]:
+            # For exclusively literal-valued properties
             cls = LiteralPropertyProxy
 
         return cls(

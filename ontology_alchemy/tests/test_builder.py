@@ -77,7 +77,7 @@ def test_rdfs_class_hierarchy_is_valid():
     assert_that(ontology.naics.__bases__, contains_inanyorder(
         RDF_Property,
     ))
-    assert_that(ontology.naics.__uri__, is_(instance_of(string_types)))
+    assert_that(ontology.naics.__uri__, is_(instance_of(string_types[0])))
     assert_that(ontology.naics.label(lang="en"), contains_inanyorder(
         "naics"
     ))

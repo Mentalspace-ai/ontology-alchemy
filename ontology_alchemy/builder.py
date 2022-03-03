@@ -94,9 +94,7 @@ class OntologyBuilder(object):
         )
         property_name = self._extract_name(property_uri)
         domain_class = self._resolve_domain(domain_uri)
-        x = self.namespace[property_name]
-        print(f"domain: {dir(x)}")
-        x.domain += domain_class
+        self.namespace[property_name].domain += domain_class
 
     def add_property_range(self, property_uri, range_uri):
         self.logger.debug(
@@ -106,9 +104,7 @@ class OntologyBuilder(object):
         )
         property_name = self._extract_name(property_uri)
         range_class = self._resolve_range(range_uri)
-        x = self.namespace[property_name]
-        print(f"range: {dir(x)}")
-        x.range += range_class
+        self.namespace[property_name].range += range_class
 
     def add_comment(self, class_uri, comment, lang=DEFAULT_LANGUAGE_TAG):
         class_name = self._extract_name(class_uri)
@@ -240,15 +236,16 @@ class OntologyBuilder(object):
 
         self.logger.debug("_add_type() - Adding type: %s", class_name)
 
-        if is_property:
-            base_classes = (RDF_Property,)
-        elif base_class_uris:
-            base_classes = tuple(
-                self._resolve_base_class(base_class_uri)
-                for base_class_uri in base_class_uris
-            )
-        else:
-            base_classes = (RDFS_Class,)
+        base_classes = (RDF_Property,) if is_property else (RDFS_Class,)
+        distinct_base_class_uris = base_class_uris.difference({class_uri})
+
+        if distinct_base_class_uris:
+            adds = []
+            for base_class_uri in distinct_base_class_uris:
+                base_class_name = self._extract_name(base_class_uri)
+                if class_name != base_class_name:
+                    adds.append(self._resolve_base_class(base_class_uri))
+            base_classes = tuple(set(adds))
 
         self.namespace[class_name] = type(
             class_name,

@@ -118,4 +118,7 @@ def looks_like_a_property_uri(uri):
 
     """
     name = urlparse(uri).path
+    print(f"{uri=} {name=}")
+    if not name:
+        return False
     return name[0] in ascii_lowercase
